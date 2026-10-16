@@ -696,7 +696,7 @@ export const PlatformAnalysisView: React.FC<PlatformAnalysisViewProps> = ({
   }
 
   return (
-    <div className="space-y-12 max-w-[1536px] mx-auto select-none px-2 sm:px-4">
+    <div className="space-y-12 max-w-[1536px] mx-auto select-none px-2 sm:px-4 overflow-x-clip">
       {/* Keyframe & Reduced Motion Styles */}
       <style>{`
         @keyframes psPulseGlow {
