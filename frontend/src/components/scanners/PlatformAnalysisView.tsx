@@ -904,33 +904,33 @@ export const PlatformAnalysisView: React.FC<PlatformAnalysisViewProps> = ({
 
             {/* 6 Floating Holographic HUD Badges Surrounding the Smartphone */}
             {/* Left 3 Badges */}
-            <div className="absolute left-0 top-[12%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
+            <div className="absolute left-0 sm:left-1 top-[12%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: config.accentColor }} />
               <span>{config.hudBadges[0]}</span>
             </div>
 
-            <div className="absolute left-[-12px] sm:left-[-16px] top-[43%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
+            <div className="absolute left-[-2px] sm:left-[-4px] top-[43%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00D9FF]" />
               <span>{config.hudBadges[1]}</span>
             </div>
 
-            <div className="absolute left-0 top-[74%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
+            <div className="absolute left-0 sm:left-1 top-[74%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
               <span>{config.hudBadges[2]}</span>
             </div>
 
             {/* Right 3 Badges */}
-            <div className="absolute right-0 top-[12%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
+            <div className="absolute right-0 sm:right-1 top-[12%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
               <span>{config.hudBadges[3]}</span>
             </div>
 
-            <div className="absolute right-[-12px] sm:right-[-16px] top-[43%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
+            <div className="absolute right-[-2px] sm:right-[-4px] top-[43%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
               <span>{config.hudBadges[4]}</span>
             </div>
 
-            <div className="absolute right-0 top-[74%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
+            <div className="absolute right-0 sm:right-1 top-[74%] z-20 px-2.5 py-1.5 rounded-xl bg-[#04182B]/90 border border-[#00D9FF]/30 backdrop-blur-md shadow-lg text-[10px] font-mono text-[#F8FAFC] flex items-center gap-1.5 pointer-events-none hover:scale-105 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: config.accentColor }} />
               <span>{config.hudBadges[5]}</span>
             </div>
