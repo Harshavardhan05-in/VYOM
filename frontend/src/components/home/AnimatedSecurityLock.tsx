@@ -45,7 +45,7 @@ export const AnimatedSecurityLock: React.FC = () => {
     renderer.setSize(width, height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.25
+    renderer.toneMappingExposure = 1.3
     container.appendChild(renderer.domElement)
 
     // ========================================================
@@ -53,33 +53,33 @@ export const AnimatedSecurityLock: React.FC = () => {
     // ========================================================
     const scene = new THREE.Scene()
     scene.background = new THREE.Color(0x020b16)
-    scene.fog = new THREE.FogExp2(0x020b16, 0.004)
+    scene.fog = new THREE.FogExp2(0x020b16, 0.0035)
 
     const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 1000)
     camera.position.set(0, 0, 108)
     camera.lookAt(0, -1, 0)
 
     // Ambient light in rich midnight navy
-    const ambientLight = new THREE.AmbientLight(0x061426, 2.8)
+    const ambientLight = new THREE.AmbientLight(0x061426, 3.0)
     scene.add(ambientLight)
 
     // Key cyan light (front-left)
-    const keyLightLeft = new THREE.PointLight(0x00d9ff, 3.6, 140)
+    const keyLightLeft = new THREE.PointLight(0x00d9ff, 3.8, 140)
     keyLightLeft.position.set(-34, 22, 48)
     scene.add(keyLightLeft)
 
     // Key bright-blue light (front-right)
-    const keyLightRight = new THREE.PointLight(0x008cff, 3.2, 140)
+    const keyLightRight = new THREE.PointLight(0x008cff, 3.4, 140)
     keyLightRight.position.set(34, 24, 48)
     scene.add(keyLightRight)
 
     // Electric cyan rim light behind lock
-    const rimLightBack = new THREE.PointLight(0x00d9ff, 4.2, 110)
+    const rimLightBack = new THREE.PointLight(0x00d9ff, 4.5, 110)
     rimLightBack.position.set(0, 8, -10)
     scene.add(rimLightBack)
 
     // Platform cyan uplight
-    const platformLight = new THREE.PointLight(0x00d9ff, 4.5, 95)
+    const platformLight = new THREE.PointLight(0x00d9ff, 4.8, 95)
     platformLight.position.set(0, -26, 16)
     scene.add(platformLight)
 
@@ -102,9 +102,9 @@ export const AnimatedSecurityLock: React.FC = () => {
       ctx.fillRect(0, 0, 1024, 1024)
 
       // Restrained atmospheric cyan & blue lighting behind globe
-      const radial = ctx.createRadialGradient(512, 480, 25, 512, 480, 500)
-      radial.addColorStop(0, 'rgba(0, 217, 255, 0.28)')  // Electric cyan
-      radial.addColorStop(0.26, 'rgba(0, 140, 255, 0.18)') // Bright blue
+      const radial = ctx.createRadialGradient(512, 480, 25, 512, 480, 520)
+      radial.addColorStop(0, 'rgba(0, 217, 255, 0.32)')  // Electric cyan
+      radial.addColorStop(0.26, 'rgba(0, 140, 255, 0.20)') // Bright blue
       radial.addColorStop(0.60, 'rgba(6, 20, 38, 0.08)')   // Midnight navy
       radial.addColorStop(1, 'rgba(2, 11, 22, 0)')
       ctx.fillStyle = radial
@@ -113,25 +113,25 @@ export const AnimatedSecurityLock: React.FC = () => {
       // Deep-blue futuristic city silhouettes on Left & Right Flanks
       const towers = [
         // Left Flank Silhouettes
-        { x: 0, w: 90, h: 840, winRows: 50, winW: 3, winH: 8, col: '#00D9FF', density: 0.38 },
-        { x: 75, w: 105, h: 920, winRows: 56, winW: 4, winH: 10, col: '#008CFF', density: 0.42 },
-        { x: 165, w: 95, h: 780, winRows: 44, winW: 3, winH: 7, col: '#00D9FF', density: 0.32 },
-        { x: 245, w: 85, h: 700, winRows: 40, winW: 2, winH: 6, col: '#008CFF', density: 0.28 },
+        { x: 0, w: 90, h: 840, winRows: 50, winW: 3, winH: 8, col: '#00D9FF', density: 0.4 },
+        { x: 75, w: 105, h: 920, winRows: 56, winW: 4, winH: 10, col: '#008CFF', density: 0.44 },
+        { x: 165, w: 95, h: 780, winRows: 44, winW: 3, winH: 7, col: '#00D9FF', density: 0.34 },
+        { x: 245, w: 85, h: 700, winRows: 40, winW: 2, winH: 6, col: '#008CFF', density: 0.3 },
         // Right Flank Silhouettes
-        { x: 690, w: 85, h: 700, winRows: 40, winW: 2, winH: 6, col: '#008CFF', density: 0.28 },
-        { x: 760, w: 100, h: 800, winRows: 46, winW: 3, winH: 7, col: '#00D9FF', density: 0.32 },
-        { x: 845, w: 105, h: 930, winRows: 58, winW: 4, winH: 10, col: '#008CFF', density: 0.42 },
-        { x: 935, w: 90, h: 850, winRows: 52, winW: 3, winH: 8, col: '#00D9FF', density: 0.38 },
+        { x: 690, w: 85, h: 700, winRows: 40, winW: 2, winH: 6, col: '#008CFF', density: 0.3 },
+        { x: 760, w: 100, h: 800, winRows: 46, winW: 3, winH: 7, col: '#00D9FF', density: 0.34 },
+        { x: 845, w: 105, h: 930, winRows: 58, winW: 4, winH: 10, col: '#008CFF', density: 0.44 },
+        { x: 935, w: 90, h: 850, winRows: 52, winW: 3, winH: 8, col: '#00D9FF', density: 0.4 },
       ]
 
       towers.forEach(t => {
         const topY = 1024 - t.h
         // Tower Body: Deep Navy panels (#0B192E / #0D203A)
-        ctx.fillStyle = 'rgba(11, 28, 48, 0.95)'
+        ctx.fillStyle = 'rgba(11, 28, 48, 0.96)'
         ctx.fillRect(t.x, topY, t.w, t.h)
 
         // Tower Outer Edge in subtle electric cyan
-        ctx.strokeStyle = 'rgba(0, 217, 255, 0.22)'
+        ctx.strokeStyle = 'rgba(0, 217, 255, 0.24)'
         ctx.lineWidth = 1
         ctx.strokeRect(t.x, topY, t.w, t.h)
 
@@ -143,7 +143,7 @@ export const AnimatedSecurityLock: React.FC = () => {
             const wy = topY + 16 + r * (t.winH + 6)
             if (Math.random() < t.density) {
               ctx.fillStyle = Math.random() < 0.2 ? '#F8FAFC' : t.col
-              ctx.globalAlpha = 0.25 + Math.random() * 0.7
+              ctx.globalAlpha = 0.3 + Math.random() * 0.7
               ctx.fillRect(wx, wy, t.winW, t.winH)
             }
           }
@@ -152,14 +152,14 @@ export const AnimatedSecurityLock: React.FC = () => {
       })
 
       // Vertical data streams in electric cyan and bright blue
-      for (let i = 0; i < 22; i++) {
-        const lx = i < 11 ? 30 + i * 24 : 730 + (i - 11) * 24
+      for (let i = 0; i < 24; i++) {
+        const lx = i < 12 ? 30 + i * 22 : 730 + (i - 12) * 22
         const ly = 100 + Math.random() * 420
         const lh = 50 + Math.random() * 160
         const streamColor = i % 2 === 0 ? 'rgba(0, 217, 255,' : 'rgba(0, 140, 255,'
         const lGrad = ctx.createLinearGradient(0, ly, 0, ly + lh)
         lGrad.addColorStop(0, `${streamColor} 0)`)
-        lGrad.addColorStop(0.5, `${streamColor} 0.42)`)
+        lGrad.addColorStop(0.5, `${streamColor} 0.45)`)
         lGrad.addColorStop(1, `${streamColor} 0)`)
         ctx.strokeStyle = lGrad
         ctx.lineWidth = 1.2
@@ -200,12 +200,12 @@ export const AnimatedSecurityLock: React.FC = () => {
 
       // Continental clusters (Lat/Lon ranges)
       const landmasses = [
-        { x1: 120, x2: 320, y1: 70, y2: 240, density: 0.6 },   // North America
-        { x1: 240, x2: 370, y1: 240, y2: 430, density: 0.55 }, // South America
-        { x1: 450, x2: 570, y1: 90, y2: 210, density: 0.65 },  // Europe
-        { x1: 460, x2: 600, y1: 200, y2: 400, density: 0.55 }, // Africa
-        { x1: 570, x2: 870, y1: 80, y2: 260, density: 0.65 },  // Asia
-        { x1: 730, x2: 900, y1: 260, y2: 430, density: 0.55 }, // Australia & Oceania
+        { x1: 120, x2: 320, y1: 70, y2: 240, density: 0.65 },  // North America
+        { x1: 240, x2: 370, y1: 240, y2: 430, density: 0.6 },  // South America
+        { x1: 450, x2: 570, y1: 90, y2: 210, density: 0.7 },   // Europe
+        { x1: 460, x2: 600, y1: 200, y2: 400, density: 0.6 },  // Africa
+        { x1: 570, x2: 870, y1: 80, y2: 260, density: 0.7 },   // Asia
+        { x1: 730, x2: 900, y1: 260, y2: 430, density: 0.6 },  // Australia & Oceania
       ]
 
       const step = 7
@@ -227,18 +227,18 @@ export const AnimatedSecurityLock: React.FC = () => {
           }
           if (isLand) {
             const rand = Math.random()
-            ctx.fillStyle = rand < 0.15 ? '#F8FAFC' : rand < 0.72 ? '#00D9FF' : '#008CFF'
+            ctx.fillStyle = rand < 0.15 ? '#F8FAFC' : rand < 0.75 ? '#00D9FF' : '#008CFF'
             ctx.shadowColor = '#00D9FF'
-            ctx.shadowBlur = 3
+            ctx.shadowBlur = 4
             ctx.beginPath()
-            ctx.arc(x, y, 1.8, 0, Math.PI * 2)
+            ctx.arc(x, y, 1.9, 0, Math.PI * 2)
             ctx.fill()
           }
         }
       }
 
       // Coordinate Grid Lines
-      ctx.strokeStyle = 'rgba(0, 217, 255, 0.22)'
+      ctx.strokeStyle = 'rgba(0, 217, 255, 0.25)'
       ctx.lineWidth = 1
       for (let y = 64; y < 512; y += 64) {
         ctx.beginPath()
@@ -262,7 +262,7 @@ export const AnimatedSecurityLock: React.FC = () => {
       new THREE.MeshBasicMaterial({
         map: globeTexture,
         transparent: true,
-        opacity: 0.88,
+        opacity: 0.92,
         blending: THREE.AdditiveBlending,
       })
     )
@@ -283,7 +283,7 @@ export const AnimatedSecurityLock: React.FC = () => {
       const mat = new THREE.LineBasicMaterial({
         color: 0x00d9ff,
         transparent: true,
-        opacity: latDeg === 0 ? 0.4 : 0.24,
+        opacity: latDeg === 0 ? 0.45 : 0.28,
       })
       globeGroup.add(new THREE.LineLoop(geom, mat))
     })
@@ -304,7 +304,7 @@ export const AnimatedSecurityLock: React.FC = () => {
       const mat = new THREE.LineBasicMaterial({
         color: 0x008cff,
         transparent: true,
-        opacity: 0.25,
+        opacity: 0.28,
       })
       globeGroup.add(new THREE.LineLoop(geom, mat))
     })
@@ -314,7 +314,7 @@ export const AnimatedSecurityLock: React.FC = () => {
     const atmosphereMat = new THREE.MeshBasicMaterial({
       color: 0x008cff,
       transparent: true,
-      opacity: 0.14,
+      opacity: 0.16,
       blending: THREE.AdditiveBlending,
       side: THREE.BackSide,
     })
@@ -335,9 +335,9 @@ export const AnimatedSecurityLock: React.FC = () => {
     particleGeom.setAttribute('position', new THREE.BufferAttribute(pCoords, 3))
     const particleMat = new THREE.PointsMaterial({
       color: 0x00d9ff,
-      size: 2.6,
+      size: 2.8,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.75,
       blending: THREE.AdditiveBlending,
     })
     globeGroup.add(new THREE.Points(particleGeom, particleMat))
@@ -377,9 +377,9 @@ export const AnimatedSecurityLock: React.FC = () => {
         nodeGeom,
         new THREE.PointsMaterial({
           color: 0xf8fafc,
-          size: 3.4,
+          size: 3.5,
           transparent: true,
-          opacity: 0.88,
+          opacity: 0.9,
           blending: THREE.AdditiveBlending,
         })
       )
@@ -387,8 +387,8 @@ export const AnimatedSecurityLock: React.FC = () => {
       return group
     }
 
-    const ring1 = createOrbitRing(34.5, 0x00d9ff, 0.68, 8) // Electric cyan
-    const ring2 = createOrbitRing(38.0, 0x008cff, 0.48, 6) // Bright blue
+    const ring1 = createOrbitRing(34.5, 0x00d9ff, 0.7, 8) // Electric cyan
+    const ring2 = createOrbitRing(38.0, 0x008cff, 0.5, 6) // Bright blue
     ring2.rotation.z = 0.4
     ringsGroup.add(ring1)
     ringsGroup.add(ring2)
@@ -484,9 +484,9 @@ export const AnimatedSecurityLock: React.FC = () => {
     // Cardinal Flare Points along the platform rims
     const flareMat = new THREE.PointsMaterial({
       color: 0xf8fafc,
-      size: 4.5,
+      size: 4.8,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.92,
       blending: THREE.AdditiveBlending,
     })
     const flareCoords = [
@@ -508,22 +508,22 @@ export const AnimatedSecurityLock: React.FC = () => {
     const beamHeight = 8.7
     const beamCenterY = -26.9 + beamHeight / 2
 
-    const beamOuterGeom = new THREE.CylinderGeometry(0.5, 2.8, beamHeight, 32)
+    const beamOuterGeom = new THREE.CylinderGeometry(0.55, 3.0, beamHeight, 32)
     const beamOuterMat = new THREE.MeshBasicMaterial({
       color: 0x00d9ff,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.6,
       blending: THREE.AdditiveBlending,
     })
     const beamOuter = new THREE.Mesh(beamOuterGeom, beamOuterMat)
     beamOuter.position.set(0, beamCenterY, 2)
     scene.add(beamOuter)
 
-    const beamCoreGeom = new THREE.CylinderGeometry(0.18, 0.9, beamHeight, 32)
+    const beamCoreGeom = new THREE.CylinderGeometry(0.2, 1.0, beamHeight, 32)
     const beamCoreMat = new THREE.MeshBasicMaterial({
       color: 0xf8fafc,
       transparent: true,
-      opacity: 0.96,
+      opacity: 0.98,
       blending: THREE.AdditiveBlending,
     })
     const beamCore = new THREE.Mesh(beamCoreGeom, beamCoreMat)
@@ -536,10 +536,10 @@ export const AnimatedSecurityLock: React.FC = () => {
     const tipFlare = new THREE.Points(
       tipFlareGeom,
       new THREE.PointsMaterial({
-        color: 0x00d9ff,
-        size: 8.5,
+        color: 0x00ffff,
+        size: 9.0,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.98,
         blending: THREE.AdditiveBlending,
       })
     )
@@ -592,50 +592,53 @@ export const AnimatedSecurityLock: React.FC = () => {
     shieldMesh.renderOrder = 10
     lockGroup.add(shieldMesh)
 
-    // Shield Glowing Neon Perimeter Lines (Front and Back)
-    const createShieldContourPoints = () => {
-      const pts: THREE.Vector3[] = []
-      pts.push(new THREE.Vector3(0, -21.7, 0))
-      for (let t = 0; t <= 1; t += 0.05) {
-        const u = 1 - t
-        const x = 3 * u * u * t * 7.5 + 3 * u * t * t * 17.5 + t * t * t * 17.8
-        const y = u * u * u * (-21.7) + 3 * u * u * t * (-17.5) + 3 * u * t * t * (-9.5) + t * t * t * 1.0
-        pts.push(new THREE.Vector3(x, y, 0))
-      }
-      pts.push(new THREE.Vector3(17.8, 11.0, 0))
-      pts.push(new THREE.Vector3(14.8, 13.5, 0))
-      pts.push(new THREE.Vector3(-14.8, 13.5, 0))
-      pts.push(new THREE.Vector3(-17.8, 11.0, 0))
-      pts.push(new THREE.Vector3(-17.8, 1.0, 0))
-      for (let t = 0; t <= 1; t += 0.05) {
-        const u = 1 - t
-        const x = u * u * u * (-17.8) + 3 * u * u * t * (-17.5) + 3 * u * t * t * (-7.5)
-        const y = u * u * u * 1.0 + 3 * u * u * t * (-9.5) + 3 * u * t * t * (-17.5) + t * t * t * (-21.7)
-        pts.push(new THREE.Vector3(x, y, 0))
-      }
-      return pts
+    // --------------------------------------------------------
+    // B. THICK GLOWING NEON CYAN SHIELD RIM (Front and Back)
+    // --------------------------------------------------------
+    const createShieldRimGeometry = () => {
+      const outer = new THREE.Shape()
+      outer.moveTo(0, -21.7)
+      outer.bezierCurveTo(7.5, -17.5, 17.5, -9.5, 17.8, 1.0)
+      outer.lineTo(17.8, 11.0)
+      outer.lineTo(14.8, 13.5)
+      outer.lineTo(-14.8, 13.5)
+      outer.lineTo(-17.8, 11.0)
+      outer.lineTo(-17.8, 1.0)
+      outer.bezierCurveTo(-17.5, -9.5, -7.5, -17.5, 0, -21.7)
+
+      const hole = new THREE.Path()
+      hole.moveTo(0, -19.5)
+      hole.bezierCurveTo(6.6, -15.8, 15.6, -8.6, 15.8, 0.8)
+      hole.lineTo(15.8, 9.8)
+      hole.lineTo(13.2, 12.0)
+      hole.lineTo(-13.2, 12.0)
+      hole.lineTo(-15.8, 9.8)
+      hole.lineTo(-15.8, 0.8)
+      hole.bezierCurveTo(-15.6, -8.6, -6.6, -15.8, 0, -19.5)
+      outer.holes.push(hole)
+
+      const geom = new THREE.ExtrudeGeometry(outer, { depth: 0.45, bevelEnabled: false })
+      geom.translate(0, 0, -0.22)
+      return geom
     }
 
-    const contourPts = createShieldContourPoints()
-    const contourGeom = new THREE.BufferGeometry().setFromPoints(contourPts)
-    const neonContourMat = new THREE.LineBasicMaterial({
+    const neonRimMat = new THREE.MeshBasicMaterial({
       color: 0x00d9ff,
-      transparent: true,
-      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
     })
 
-    const frontContour = new THREE.LineLoop(contourGeom, neonContourMat)
-    frontContour.position.z = 2.4
-    frontContour.renderOrder = 11
-    lockGroup.add(frontContour)
+    const frontRim = new THREE.Mesh(createShieldRimGeometry(), neonRimMat)
+    frontRim.position.z = 2.45
+    frontRim.renderOrder = 11
+    lockGroup.add(frontRim)
 
-    const backContour = new THREE.LineLoop(contourGeom, neonContourMat)
-    backContour.position.z = -2.4
-    backContour.renderOrder = 11
-    lockGroup.add(backContour)
+    const backRim = new THREE.Mesh(createShieldRimGeometry(), neonRimMat)
+    backRim.position.z = -2.45
+    backRim.renderOrder = 11
+    lockGroup.add(backRim)
 
     // --------------------------------------------------------
-    // B. SHACKLE (Curved Inverted U-Tube)
+    // C. SHACKLE (Smooth Curved Inverted U-Tube)
     // --------------------------------------------------------
     const shackleCurve = new THREE.CurvePath<THREE.Vector3>()
     const leg1 = new THREE.LineCurve3(new THREE.Vector3(-8.8, 9.5, 0), new THREE.Vector3(-8.8, 20.5, 0))
@@ -651,7 +654,7 @@ export const AnimatedSecurityLock: React.FC = () => {
     shackleCurve.add(leg2)
 
     // Outer Shackle Tube in deep aerospace navy
-    const shackleGeom = new THREE.TubeGeometry(shackleCurve, 54, 2.1, 20, false)
+    const shackleGeom = new THREE.TubeGeometry(shackleCurve, 54, 2.1, 24, false)
     const shackleMat = new THREE.MeshStandardMaterial({
       color: 0x0e284c,
       metalness: 0.94,
@@ -663,17 +666,17 @@ export const AnimatedSecurityLock: React.FC = () => {
     shackleMesh.renderOrder = 10
     lockGroup.add(shackleMesh)
 
-    // Glowing Neon Cyan Contour on Shackle
-    const shackleNeonGeom = new THREE.TubeGeometry(shackleCurve, 54, 2.22, 12, false)
-    const shackleNeonMat = new THREE.MeshBasicMaterial({
+    // Smooth Glowing Neon Cyan Contour along Shackle Curve
+    const shackleGlowGeom = new THREE.TubeGeometry(shackleCurve, 54, 2.25, 16, false)
+    const shackleGlowMat = new THREE.MeshBasicMaterial({
       color: 0x00d9ff,
-      wireframe: true,
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
     })
-    const shackleNeonMesh = new THREE.Mesh(shackleNeonGeom, shackleNeonMat)
-    shackleNeonMesh.renderOrder = 11
-    lockGroup.add(shackleNeonMesh)
+    const shackleGlowMesh = new THREE.Mesh(shackleGlowGeom, shackleGlowMat)
+    shackleGlowMesh.renderOrder = 11
+    lockGroup.add(shackleGlowMesh)
 
     // Crest Specular White Highlight (#F8FAFC)
     const crestArc = new THREE.CubicBezierCurve3(
@@ -686,13 +689,13 @@ export const AnimatedSecurityLock: React.FC = () => {
     const crestGeom = new THREE.BufferGeometry().setFromPoints(crestPts)
     const crestLine = new THREE.Line(
       crestGeom,
-      new THREE.LineBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.92 })
+      new THREE.LineBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.95 })
     )
     crestLine.renderOrder = 12
     lockGroup.add(crestLine)
 
     // --------------------------------------------------------
-    // C. NESTED INNER SHIELD PLATE (Front and Back)
+    // D. NESTED INNER SHIELD (Front and Back)
     // --------------------------------------------------------
     const innerShieldShape = new THREE.Shape()
     innerShieldShape.moveTo(0, -17.5)
@@ -731,8 +734,46 @@ export const AnimatedSecurityLock: React.FC = () => {
     backInnerShield.renderOrder = 12
     lockGroup.add(backInnerShield)
 
+    // Inner Glowing Cyan Contour Outline
+    const createInnerShieldRimGeometry = () => {
+      const outer = new THREE.Shape()
+      outer.moveTo(0, -17.5)
+      outer.bezierCurveTo(6.0, -14.0, 14.0, -7.5, 14.2, 0.5)
+      outer.lineTo(14.2, 9.0)
+      outer.lineTo(12.0, 11.0)
+      outer.lineTo(-12.0, 11.0)
+      outer.lineTo(-14.2, 9.0)
+      outer.lineTo(-14.2, 0.5)
+      outer.bezierCurveTo(-14.0, -7.5, -6.0, -14.0, 0, -17.5)
+
+      const hole = new THREE.Path()
+      hole.moveTo(0, -15.8)
+      hole.bezierCurveTo(5.2, -12.6, 12.5, -6.6, 12.7, 0.4)
+      hole.lineTo(12.7, 7.8)
+      hole.lineTo(10.8, 9.6)
+      hole.lineTo(-10.8, 9.6)
+      hole.lineTo(-12.7, 7.8)
+      hole.lineTo(-12.7, 0.4)
+      hole.bezierCurveTo(-12.5, -6.6, -5.2, -12.6, 0, -15.8)
+      outer.holes.push(hole)
+
+      const geom = new THREE.ExtrudeGeometry(outer, { depth: 0.35, bevelEnabled: false })
+      geom.translate(0, 0, -0.17)
+      return geom
+    }
+
+    const frontInnerRim = new THREE.Mesh(createInnerShieldRimGeometry(), neonRimMat)
+    frontInnerRim.position.z = 2.8
+    frontInnerRim.renderOrder = 13
+    lockGroup.add(frontInnerRim)
+
+    const backInnerRim = new THREE.Mesh(createInnerShieldRimGeometry(), neonRimMat)
+    backInnerRim.position.z = -2.8
+    backInnerRim.renderOrder = 13
+    lockGroup.add(backInnerRim)
+
     // --------------------------------------------------------
-    // D. STYLIZED 'P' EMBLEM (Front and Back)
+    // E. STYLIZED 'P' EMBLEM (Front and Back)
     // Brilliant electric cyan (#00D9FF) + specular white core (#F8FAFC)
     // --------------------------------------------------------
     const pShape = new THREE.Shape()
@@ -766,20 +807,20 @@ export const AnimatedSecurityLock: React.FC = () => {
     const pEmblemMat = new THREE.MeshStandardMaterial({
       color: 0x00d9ff,
       emissive: 0x00d9ff,
-      emissiveIntensity: 2.6,
-      metalness: 0.2,
+      emissiveIntensity: 2.8,
+      metalness: 0.15,
       roughness: 0.1,
     })
 
     const frontPEmblem = new THREE.Mesh(pGeom, pEmblemMat)
-    frontPEmblem.position.set(0.6, -1.0, 2.95)
-    frontPEmblem.renderOrder = 13
+    frontPEmblem.position.set(0.6, -1.0, 3.05)
+    frontPEmblem.renderOrder = 14
     lockGroup.add(frontPEmblem)
 
     const backPEmblem = new THREE.Mesh(pGeom, pEmblemMat)
-    backPEmblem.position.set(-0.6, -1.0, -2.95)
+    backPEmblem.position.set(-0.6, -1.0, -3.05)
     backPEmblem.rotation.y = Math.PI
-    backPEmblem.renderOrder = 13
+    backPEmblem.renderOrder = 14
     lockGroup.add(backPEmblem)
 
     // Specular Flare Glints on Shield Shoulders (#F8FAFC)
@@ -800,11 +841,11 @@ export const AnimatedSecurityLock: React.FC = () => {
         color: 0xf8fafc,
         size: 5.5,
         transparent: true,
-        opacity: 0.92,
+        opacity: 0.95,
         blending: THREE.AdditiveBlending,
       })
     )
-    shoulderGlints.renderOrder = 14
+    shoulderGlints.renderOrder = 15
     lockGroup.add(shoulderGlints)
 
     // ========================================================
@@ -839,9 +880,9 @@ export const AnimatedSecurityLock: React.FC = () => {
       ring2.rotation.z -= 0.04 * delta
 
       // 4. ENERGY BEAM & TIP FLARE PULSE
-      const beamPulse = 0.8 + Math.sin(elapsed * 4.0) * 0.18
+      const beamPulse = 0.82 + Math.sin(elapsed * 4.0) * 0.18
       beamCoreMat.opacity = beamPulse
-      beamOuterMat.opacity = 0.45 + Math.sin(elapsed * 4.0) * 0.12
+      beamOuterMat.opacity = 0.48 + Math.sin(elapsed * 4.0) * 0.12
 
       renderer.render(scene, camera)
     }
