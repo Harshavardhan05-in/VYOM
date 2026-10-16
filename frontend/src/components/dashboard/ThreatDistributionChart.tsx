@@ -22,7 +22,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     {
       id: 'phishing',
       label: 'Phishing',
-      count: Math.round((breakdown.url || 0) * 0.48) || 28,
+      count: breakdown.url ? Math.round(breakdown.url * 0.55) : 0,
       icon: ShieldAlert,
       color: '#EF4444',
       group: 'web',
@@ -30,7 +30,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     {
       id: 'malware',
       label: 'Malware',
-      count: breakdown.file || 12,
+      count: breakdown.file || 0,
       icon: Bug,
       color: '#F97316',
       group: 'web',
@@ -38,7 +38,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     {
       id: 'links',
       label: 'Suspicious Links',
-      count: Math.round((breakdown.url || 0) * 0.32) || 11,
+      count: (breakdown.qr || 0) + (breakdown.url ? Math.round(breakdown.url * 0.45) : 0),
       icon: AlertTriangle,
       color: '#F59E0B',
       group: 'web',
@@ -46,7 +46,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     {
       id: 'websites',
       label: 'Fake Websites',
-      count: Math.round((breakdown.email || 0) * 0.5) || 8,
+      count: breakdown.email || 0,
       icon: Lock,
       color: '#10B981',
       group: 'web',
@@ -54,7 +54,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     {
       id: 'scams',
       label: 'Scams & Fraud',
-      count: breakdown.phone || 5,
+      count: breakdown.phone || 0,
       icon: AlertTriangle,
       color: '#00D9FF',
       group: 'identity',
@@ -62,7 +62,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     {
       id: 'identity',
       label: 'Identity Theft',
-      count: breakdown.social || 3,
+      count: breakdown.social || 0,
       icon: Users,
       color: '#A855F7',
       group: 'identity',
@@ -76,7 +76,7 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
     return true
   })
 
-  const totalFilteredCount = categories.reduce((sum, c) => sum + c.count, 0) || 1
+  const totalFilteredCount = categories.reduce((sum, c) => sum + c.count, 0)
 
   return (
     <div className="rounded-2xl bg-[#04182B] border border-[#00D9FF]/20 p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex flex-col justify-between select-none">
@@ -105,51 +105,57 @@ export const ThreatDistributionChart: React.FC<ThreatDistributionProps> = ({
 
       {/* Horizontal Progress Rows Matching Reference Blueprint */}
       <div className="space-y-3.5 pt-4">
-        {categories.map((cat) => {
-          const Icon = cat.icon
-          const pct = Math.round((cat.count / totalFilteredCount) * 100) || 0
+        {totalFilteredCount === 0 ? (
+          <div className="py-8 text-center text-xs font-mono text-[#94A3B8]">
+            No threat distribution records logged for this category yet.
+          </div>
+        ) : (
+          categories.map((cat) => {
+            const Icon = cat.icon
+            const pct = totalFilteredCount > 0 ? Math.round((cat.count / totalFilteredCount) * 100) : 0
 
-          return (
-            <div key={cat.id} data-testid="threat-bar" className="flex items-center gap-3 text-xs">
-              {/* Category Icon in Rounded Square */}
-              <div
-                className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
-                style={{
-                  backgroundColor: `${cat.color}20`,
-                  borderColor: `${cat.color}45`,
-                  color: cat.color,
-                }}
-              >
-                <Icon className="w-3.5 h-3.5" />
-              </div>
-
-              {/* Category Label */}
-              <span className="text-[#CBD5E1] font-medium text-xs w-28 sm:w-32 truncate shrink-0">
-                {cat.label}
-              </span>
-
-              {/* Inline Progress Bar */}
-              <div className="flex-1 bg-[#061426] rounded-full h-2.5 overflow-hidden border border-[#00D9FF]/10">
+            return (
+              <div key={cat.id} data-testid="threat-bar" className="flex items-center gap-3 text-xs">
+                {/* Category Icon in Rounded Square */}
                 <div
-                  className="h-full rounded-full transition-all duration-700"
+                  className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 border"
                   style={{
-                    width: `${Math.max(4, pct)}%`,
-                    backgroundColor: cat.color,
-                    boxShadow: `0 0 10px ${cat.color}88`,
+                    backgroundColor: `${cat.color}20`,
+                    borderColor: `${cat.color}45`,
+                    color: cat.color,
                   }}
-                />
-              </div>
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </div>
 
-              {/* Count & Percentage Readout */}
-              <div className="flex items-center gap-3 font-mono text-xs shrink-0 w-16 justify-end">
-                <span className="text-[#94A3B8]">{cat.count}</span>
-                <span className="font-semibold text-right w-8" style={{ color: cat.color }}>
-                  {pct}%
+                {/* Category Label */}
+                <span className="text-[#CBD5E1] font-medium text-xs w-28 sm:w-32 truncate shrink-0">
+                  {cat.label}
                 </span>
+
+                {/* Inline Progress Bar */}
+                <div className="flex-1 bg-[#061426] rounded-full h-2.5 overflow-hidden border border-[#00D9FF]/10">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor: cat.color,
+                      boxShadow: pct > 0 ? `0 0 10px ${cat.color}88` : 'none',
+                    }}
+                  />
+                </div>
+
+                {/* Count & Percentage Readout */}
+                <div className="flex items-center gap-3 font-mono text-xs shrink-0 w-16 justify-end">
+                  <span className="text-[#94A3B8]">{cat.count}</span>
+                  <span className="font-semibold text-right w-8" style={{ color: cat.color }}>
+                    {pct}%
+                  </span>
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })
+        )}
       </div>
     </div>
   )

@@ -183,6 +183,13 @@ class HistoryListResponse(BaseModel):
     items: List[HistoryItem]
 
 
+class ThreatIndicatorItem(BaseModel):
+    id: str
+    name: str
+    count: int
+    severity: str = "medium"
+
+
 class DashboardStatsResponse(BaseModel):
     total_scans: int
     threats_detected: int
@@ -192,4 +199,6 @@ class DashboardStatsResponse(BaseModel):
     average_risk_score: float
     scanners_breakdown: Dict[str, int]
     recent_activity: List[HistoryItem]
+    top_threat_indicators: List[ThreatIndicatorItem] = []
     system_status: Dict[str, Any]
+

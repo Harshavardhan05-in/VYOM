@@ -1,107 +1,169 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  Terminal,
-  Play,
-  Pause,
-  Cpu,
+  FileCode,
+  Shield,
+  FileCheck2,
   HardDrive,
-  Activity,
+  Hash,
   Radio,
 } from 'lucide-react'
 import { Badge } from '../common/Badge'
+import { api, type HistoryItem } from '../../services/api'
 
 export const SandboxMatrix: React.FC = () => {
-  const [isRunning, setIsRunning] = useState(true)
+  const [fileScans, setFileScans] = useState<HistoryItem[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const sandboxTelemetry = [
-    { time: '14:22:01.042', event: 'SYS_CALL_HOOK', detail: 'NtCreateFile intercepted -> \\Device\\HarddiskVolume3\\Windows\\System32\\calc.exe' },
-    { time: '14:22:01.218', event: 'REG_WRITE_ATTEMPT', detail: 'HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run -> Blocked by Guard' },
-    { time: '14:22:01.402', event: 'DNS_RESOLVE_QUERY', detail: 'Querying C2 host: c2-beacon-relay-pool.xyz (ASN 48322)' },
-    { time: '14:22:01.670', event: 'PACKET_INSPECTION', detail: 'TLS handshake with known dynamic DNS provider blocked' },
-    { time: '14:22:02.109', event: 'HEURISTIC_RATING', detail: 'Process behavioral divergence: 88.4% anomaly threshold exceeded' },
-  ]
+  useEffect(() => {
+    const fetchFileScans = async () => {
+      try {
+        const res = await api.getHistory('file', undefined, 50, 0)
+        setFileScans(res.items || [])
+      } catch {
+        setFileScans([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchFileScans()
+  }, [])
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto select-none">
       {/* Header */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#04182B] border border-[#00D9FF]/25 shadow-[0_8px_30px_rgba(2,11,22,0.8)] space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-[#061B30] border border-[#00D9FF]/30 flex items-center justify-center text-[#00D9FF] shadow-[0_0_14px_rgba(0,217,255,0.25)]">
-              <Terminal className="h-5 w-5" />
+              <FileCode className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-bold text-[#F8FAFC]">
-                  Sandbox Detonation Matrix
+                  Static Payload & File Inspection Matrix
                 </h1>
-                <Badge variant="warning" size="sm" dot>
-                  Isolated Hypervisor
+                <Badge variant="cyan" size="sm" dot>
+                  Static Analysis
                 </Badge>
               </div>
               <p className="text-xs text-[#CBD5E1]">
-                Real-time kernel hook emulation, syscall interception, and virtual memory tracing for hostile payloads.
+                Static analysis of uploaded files: magic byte verification, RTLO character trick detection, double extension checks, and SHA-256 fingerprinting.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsRunning(!isRunning)}
-              className="px-3 py-1.5 rounded-lg bg-[#061426] border border-[#00D9FF]/30 text-xs font-mono text-[#00D9FF] hover:bg-[#061B30] transition-colors flex items-center gap-1.5"
-            >
-              {isRunning ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-              <span>{isRunning ? 'Pause Telemetry' : 'Resume Telemetry'}</span>
-            </button>
+          <div className="text-right">
+            <span className="text-[11px] font-mono text-[#94A3B8] block">Execution Policy</span>
+            <span className="text-xs font-mono text-emerald-400 font-semibold">Zero-Execution (Static Only)</span>
           </div>
         </div>
       </div>
 
-      {/* Hypervisor Metrics Grid */}
+      {/* Static Inspection Architecture Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-xl bg-[#04182B] border border-[#00D9FF]/20 flex items-center gap-3">
-          <Cpu className="h-8 w-8 text-[#00D9FF] p-1.5 rounded-lg bg-[#061B30] border border-[#00D9FF]/30 shrink-0" />
+          <FileCheck2 className="h-8 w-8 text-[#00D9FF] p-1.5 rounded-lg bg-[#061B30] border border-[#00D9FF]/30 shrink-0" />
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Virtual CPU Allocation</span>
-            <p className="text-sm font-bold text-[#F8FAFC] font-mono">4 vCPUs • QEMU KVM</p>
+            <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Inspection Engine</span>
+            <p className="text-sm font-bold text-[#F8FAFC] font-mono">Static Heuristic Parser</p>
           </div>
         </div>
 
         <div className="p-4 rounded-xl bg-[#04182B] border border-[#00D9FF]/20 flex items-center gap-3">
           <HardDrive className="h-8 w-8 text-[#00D9FF] p-1.5 rounded-lg bg-[#061B30] border border-[#00D9FF]/30 shrink-0" />
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Overlay RAM Disk</span>
-            <p className="text-sm font-bold text-[#F8FAFC] font-mono">Volatile Shadow Image</p>
+            <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Signature Scope</span>
+            <p className="text-sm font-bold text-[#F8FAFC] font-mono">PE, ELF, PDF, OLE, RTLO</p>
           </div>
         </div>
 
         <div className="p-4 rounded-xl bg-[#04182B] border border-[#00D9FF]/20 flex items-center gap-3">
-          <Activity className="h-8 w-8 text-[#00D9FF] p-1.5 rounded-lg bg-[#061B30] border border-[#00D9FF]/30 shrink-0" />
+          <Hash className="h-8 w-8 text-[#00D9FF] p-1.5 rounded-lg bg-[#061B30] border border-[#00D9FF]/30 shrink-0" />
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Network Honeynet Bridge</span>
-            <p className="text-sm font-bold text-[#10B981] font-mono">DNS Sinkhole Active</p>
+            <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Cryptographic Integrity</span>
+            <p className="text-sm font-bold text-[#10B981] font-mono">SHA-256 Digesting</p>
           </div>
         </div>
       </div>
 
-      {/* Live Terminal Log Stream */}
-      <div className="rounded-2xl bg-[#020B16] border border-[#00D9FF]/30 p-4 sm:p-5 font-mono text-xs space-y-3 shadow-[0_0_30px_rgba(0,217,255,0.1)]">
-        <div className="flex items-center justify-between pb-3 border-b border-[#00D9FF]/20 text-[11px] text-[#94A3B8]">
+      {/* Notice Alert */}
+      <div className="p-3.5 rounded-xl bg-[#061426] border border-[#00D9FF]/20 flex items-start gap-3 text-xs text-[#94A3B8]">
+        <Shield className="h-4 w-4 text-[#00D9FF] shrink-0 mt-0.5" />
+        <p>
+          <strong className="text-[#F8FAFC]">Integrity Disclosure:</strong> PhishShield AI inspects files using safe static heuristics and signature validation. The platform does not detonate hostile binaries inside a virtual machine kernel to prevent unauthorized execution risks.
+        </p>
+      </div>
+
+      {/* Real Inspected Payloads Table */}
+      <div className="rounded-2xl bg-[#04182B] border border-[#00D9FF]/25 overflow-hidden shadow-[0_8px_30px_rgba(2,11,22,0.8)]">
+        <div className="p-4 bg-[#061426] border-b border-[#00D9FF]/20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Radio className="h-3.5 w-3.5 text-[#00D9FF] animate-pulse" />
-            <span className="text-[#F8FAFC] font-bold">Live Syscall Trace Buffer</span>
+            <Radio className="h-4 w-4 text-[#00D9FF] animate-pulse" />
+            <span className="text-xs font-bold text-[#F8FAFC]">
+              Inspected File Payloads ({fileScans.length} Persisted)
+            </span>
           </div>
-          <span>Buffer: Ring-0 Intercept Mode</span>
+          <span className="text-[11px] font-mono text-[#94A3B8]">
+            Source: SQLite Security Database
+          </span>
         </div>
 
-        <div className="space-y-2 text-[#CBD5E1]">
-          {sandboxTelemetry.map((item, idx) => (
-            <div key={idx} className="flex flex-col sm:flex-row sm:items-baseline gap-2">
-              <span className="text-[#64748B] text-[10px] shrink-0">[{item.time}]</span>
-              <span className="text-[#00D9FF] font-semibold text-[11px] shrink-0">[{item.event}]</span>
-              <span className="text-[#F8FAFC] break-all">{item.detail}</span>
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="p-8 text-center text-xs font-mono text-[#94A3B8]">
+              Loading inspected files from database...
             </div>
-          ))}
+          ) : fileScans.length === 0 ? (
+            <div className="p-10 text-center space-y-1">
+              <p className="text-sm font-semibold text-[#F8FAFC]">No File Payloads Inspected Yet</p>
+              <p className="text-xs text-[#94A3B8]">
+                Upload files to the File Scanner to evaluate magic bytes, double extensions, and SHA-256 hashes.
+              </p>
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs font-mono">
+              <thead>
+                <tr className="border-b border-[#00D9FF]/15 text-[#94A3B8] text-[10px] uppercase">
+                  <th className="py-2.5 px-4">Filename / Target</th>
+                  <th className="py-2.5 px-4">Status</th>
+                  <th className="py-2.5 px-4">Risk Score</th>
+                  <th className="py-2.5 px-4">Findings Summary</th>
+                  <th className="py-2.5 px-4 text-right">Inspected At</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#00D9FF]/10 text-[#CBD5E1]">
+                {fileScans.map((row) => (
+                  <tr key={row.scan_id} className="hover:bg-[#061B30]/50 transition-colors">
+                    <td className="py-3 px-4 text-[#00D9FF] font-semibold truncate max-w-xs" title={row.input_target}>
+                      {row.input_target}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-0.5 rounded text-[10px] uppercase border ${
+                        row.risk_category === 'high_risk'
+                          ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                          : row.risk_category === 'suspicious'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      }`}>
+                        {row.risk_category}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-bold">
+                      <span className={row.risk_category === 'high_risk' ? 'text-red-400' : 'text-[#10B981]'}>
+                        {row.risk_score} / 100
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-[#CBD5E1] truncate max-w-sm" title={row.summary || ''}>
+                      {row.summary || 'Static inspection completed'}
+                    </td>
+                    <td className="py-3 px-4 text-right text-[#94A3B8]">
+                      {row.scanned_at ? new Date(row.scanned_at).toLocaleDateString() : 'Recent'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

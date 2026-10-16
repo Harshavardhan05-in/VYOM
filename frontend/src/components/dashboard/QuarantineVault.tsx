@@ -7,46 +7,6 @@ import {
 import { api, type HistoryItem } from '../../services/api'
 import { Badge } from '../common/Badge'
 
-// Sample static quarantined items if database is clean
-const fallbackQuarantined = [
-  {
-    id: 'Q-901',
-    scan_id: 'Q-SCAN-901',
-    scanner_type: 'url',
-    input_target: 'http://paypal-security-update-center.xyz/login',
-    risk_score: 96,
-    risk_category: 'high_risk',
-    findings_count: 5,
-    summary: 'Critical homoglyph domain with credential theft payload pattern',
-    status: 'quarantined',
-    scanned_at: '2026-10-16T14:00:00.000Z',
-  },
-  {
-    id: 'Q-902',
-    scan_id: 'Q-SCAN-902',
-    scanner_type: 'file',
-    input_target: 'Invoice_Q3_Review.pdf\u202Efdp.exe',
-    risk_score: 98,
-    risk_category: 'high_risk',
-    findings_count: 6,
-    summary: 'Right-to-Left Override spoofing executable binary with PE header mismatch',
-    status: 'quarantined',
-    scanned_at: '2026-10-16T13:00:00.000Z',
-  },
-  {
-    id: 'Q-903',
-    scan_id: 'Q-SCAN-903',
-    scanner_type: 'email',
-    input_target: 'Urgent: Wire Transfer Approval Request #8291',
-    risk_score: 91,
-    risk_category: 'high_risk',
-    findings_count: 4,
-    summary: 'CEO fraud impersonation with spoofed DKIM headers and phishing redirect',
-    status: 'quarantined',
-    scanned_at: '2026-10-16T11:00:00.000Z',
-  },
-]
-
 export const QuarantineVault: React.FC = () => {
   const [quarantinedItems, setQuarantinedItems] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +18,7 @@ export const QuarantineVault: React.FC = () => {
         const res = await api.getHistory(undefined, 'high_risk', 50, 0)
         setQuarantinedItems(res.items || [])
       } catch {
-        // Fallback
+        setQuarantinedItems([])
       } finally {
         setLoading(false)
       }
@@ -66,12 +26,13 @@ export const QuarantineVault: React.FC = () => {
     fetchQuarantine()
   }, [])
 
-  const displayList = quarantinedItems.length > 0 ? quarantinedItems : fallbackQuarantined
+  const displayList = quarantinedItems
 
   const filtered = displayList.filter(
     (item) =>
       item.input_target.toLowerCase().includes(search.toLowerCase()) ||
-      item.scanner_type.toLowerCase().includes(search.toLowerCase())
+      item.scanner_type.toLowerCase().includes(search.toLowerCase()) ||
+      item.scan_id.toLowerCase().includes(search.toLowerCase())
   )
 
   const handlePurge = (scanId: string) => {
@@ -126,9 +87,16 @@ export const QuarantineVault: React.FC = () => {
           <div className="p-8 text-center text-xs font-mono text-[#94A3B8]">
             Scanning quarantine vault artifacts...
           </div>
+        ) : quarantinedItems.length === 0 ? (
+          <div className="p-12 text-center rounded-2xl bg-[#04182B] border border-[#00D9FF]/15 space-y-2">
+            <p className="text-sm font-semibold text-[#F8FAFC]">No Quarantined Threat Artifacts</p>
+            <p className="text-xs text-[#94A3B8] max-w-md mx-auto">
+              The quarantine isolation vault is currently empty. High-risk payloads, malicious URLs, and flagged artifacts detected across any scanner will appear here for review and permanent purge.
+            </p>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center text-xs font-mono text-[#94A3B8]">
-            No artifacts found matching criteria.
+            No quarantined artifacts found matching &ldquo;{search}&rdquo;.
           </div>
         ) : (
           filtered.map((item) => (

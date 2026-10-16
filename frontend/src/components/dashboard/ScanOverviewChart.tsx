@@ -66,21 +66,10 @@ export const ScanOverviewChart: React.FC<ScanOverviewChartProps> = ({
             if (latestKey) groups[latestKey] += 1
           }
         } catch {
-          // fallback
+          // ignore malformed date
         }
       }
     })
-
-    // If records exist, calculate dynamic baseline values matching reference trend if few items
-    const totalMapped = Object.values(groups).reduce((a, b) => a + b, 0)
-    const keys = Object.keys(groups)
-    if (totalMapped === 0 || keys.length < 7) {
-      // Reference visual defaults for 7 days: 42, 68, 45, 28, 50, 38, 68
-      const referenceTrends = [42, 68, 45, 28, 50, 38, 68]
-      keys.forEach((k, idx) => {
-        groups[k] = referenceTrends[idx % referenceTrends.length]
-      })
-    }
 
     return Object.entries(groups).map(([date, count]) => ({ date, count }))
   }, [filteredRecords, dateRange])
@@ -91,13 +80,14 @@ export const ScanOverviewChart: React.FC<ScanOverviewChartProps> = ({
   const paddingX = 35
   const paddingY = 22
 
-  const maxVal = 100 // Match 0-100 scale on Y-axis
+  // Dynamic maximum scale adapting to actual scan volume (minimum ceiling of 10)
+  const maxVal = Math.max(10, ...timelineData.map((d) => d.count))
   const innerW = chartWidth - paddingX - 15
   const innerH = chartHeight - paddingY * 2
 
   const points = timelineData.map((d, idx) => {
     const x = paddingX + (idx / Math.max(1, timelineData.length - 1)) * innerW
-    const clampedCount = Math.min(100, Math.max(0, d.count))
+    const clampedCount = Math.max(0, d.count)
     const y = chartHeight - paddingY - (clampedCount / maxVal) * innerH
     return { ...d, x, y }
   })
@@ -145,22 +135,15 @@ export const ScanOverviewChart: React.FC<ScanOverviewChartProps> = ({
       high = stats.high_risk_count
     }
 
-    // Default to reference values if minimal
-    if (safe === 0 && susp === 0 && high === 0) {
-      safe = 140
-      susp = 41
-      high = 67
-    }
-
-    const total = safe + susp + high || 248
+    const total = safe + susp + high
     return {
       safe,
       susp,
       high,
       total,
-      safePct: Math.round((safe / total) * 100),
-      suspPct: Math.round((susp / total) * 100),
-      highPct: Math.round((high / total) * 100),
+      safePct: total > 0 ? Math.round((safe / total) * 100) : 0,
+      suspPct: total > 0 ? Math.round((susp / total) * 100) : 0,
+      highPct: total > 0 ? Math.round((high / total) * 100) : 0,
     }
   }, [filteredRecords, stats])
 

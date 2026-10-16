@@ -1,6 +1,7 @@
 """
 PhishShield AI — Comprehensive Multi-Vector Scan & History API Routes
 """
+import json
 import logging
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Request, Depends, UploadFile, File, Query
@@ -13,7 +14,8 @@ from app.schemas.scanners import (
     PhoneScanRequest, PhoneScanResponse,
     EmailScanRequest, EmailScanResponse,
     SocialScanRequest, SocialScanResponse,
-    HistoryListResponse, HistoryItem, DashboardStatsResponse
+    HistoryListResponse, HistoryItem, DashboardStatsResponse,
+    ThreatIndicatorItem,
 )
 from app.services.scan_service import run_scan
 from app.services.file_service import analyze_file
@@ -354,6 +356,41 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
             for r in recent
         ]
 
+        # Aggregate authentic top threat indicators from persisted findings
+        finding_records = (
+            db.query(ScanRecordDB)
+            .filter(ScanRecordDB.findings_count > 0)
+            .order_by(desc(ScanRecordDB.scanned_at))
+            .limit(250)
+            .all()
+        )
+        indicator_counts = {}
+        indicator_severities = {}
+        for fr in finding_records:
+            if fr.findings_json:
+                try:
+                    f_list = json.loads(fr.findings_json)
+                    for f in f_list:
+                        if f.get("triggered"):
+                            title = f.get("title", "").strip()
+                            if title:
+                                indicator_counts[title] = indicator_counts.get(title, 0) + 1
+                                if title not in indicator_severities:
+                                    indicator_severities[title] = f.get("severity", "medium")
+                except Exception:
+                    pass
+
+        sorted_indicators = sorted(indicator_counts.items(), key=lambda x: -x[1])[:6]
+        top_indicators = [
+            ThreatIndicatorItem(
+                id=f"ind-{idx + 1}",
+                name=title,
+                count=count,
+                severity=indicator_severities.get(title, "medium"),
+            )
+            for idx, (title, count) in enumerate(sorted_indicators)
+        ]
+
         return DashboardStatsResponse(
             total_scans=total,
             threats_detected=high_risk + suspicious,
@@ -363,6 +400,7 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
             average_risk_score=avg_score,
             scanners_breakdown=breakdown,
             recent_activity=recent_items,
+            top_threat_indicators=top_indicators,
             system_status={
                 "engine_online": True,
                 "ml_model_loaded": model_manager.is_available(),

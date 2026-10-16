@@ -162,6 +162,13 @@ export interface HistoryListResponse {
   items: HistoryItem[]
 }
 
+export interface ThreatIndicatorItem {
+  id: string
+  name: string
+  count: number
+  severity: string
+}
+
 export interface DashboardStatsResponse {
   total_scans: number
   threats_detected: number
@@ -171,6 +178,7 @@ export interface DashboardStatsResponse {
   average_risk_score: number
   scanners_breakdown: Record<string, number>
   recent_activity: HistoryItem[]
+  top_threat_indicators?: ThreatIndicatorItem[]
   system_status: {
     engine_online: boolean
     ml_model_loaded: boolean

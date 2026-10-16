@@ -7,24 +7,54 @@ import {
 import { Badge } from '../common/Badge'
 import { Button } from '../common/Button'
 
+interface SettingsFlags {
+  homoglyphStrict: boolean
+  blockHighRiskTld: boolean
+  deepPeValidation: boolean
+  wangiriDetection: boolean
+  localTelemetryOnly: boolean
+  autoQuarantine: boolean
+}
+
 export const SystemSettings: React.FC = () => {
-  const [sensitivity, setSensitivity] = useState(70)
-  const [flags, setFlags] = useState({
-    homoglyphStrict: true,
-    blockHighRiskTld: true,
-    deepPeValidation: true,
-    wangiriDetection: true,
-    localTelemetryOnly: true,
-    autoQuarantine: false,
+  const [sensitivity, setSensitivity] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('phishshield_sensitivity')
+      return saved ? Number(saved) : 70
+    } catch {
+      return 70
+    }
+  })
+  const [flags, setFlags] = useState<SettingsFlags>(() => {
+    try {
+      const saved = localStorage.getItem('phishshield_flags')
+      if (saved) return JSON.parse(saved)
+    } catch {
+      // default
+    }
+    return {
+      homoglyphStrict: true,
+      blockHighRiskTld: true,
+      deepPeValidation: true,
+      wangiriDetection: true,
+      localTelemetryOnly: true,
+      autoQuarantine: false,
+    }
   })
   const [saved, setSaved] = useState(false)
 
-  const handleToggle = (key: keyof typeof flags) => {
-    setFlags((prev) => ({ ...prev, [key]: !prev[key] }))
+  const handleToggle = (key: keyof SettingsFlags) => {
+    setFlags((prev: SettingsFlags) => ({ ...prev, [key]: !prev[key] }))
     setSaved(false)
   }
 
   const handleSave = () => {
+    try {
+      localStorage.setItem('phishshield_sensitivity', String(sensitivity))
+      localStorage.setItem('phishshield_flags', JSON.stringify(flags))
+    } catch {
+      // ignore
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }

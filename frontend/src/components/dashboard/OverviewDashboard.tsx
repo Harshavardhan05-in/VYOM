@@ -115,6 +115,67 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   const safeCount = stats?.safe_count ?? historyRecords.filter((r) => r.risk_category === 'safe').length
   const profilesChecked = stats?.scanners_breakdown?.social ?? historyRecords.filter((r) => r.scanner_type === 'social').length
 
+  // Dynamic period-over-period trend computation from real records
+  const trends = useMemo(() => {
+    if (!historyRecords || historyRecords.length === 0) {
+      return {
+        total: '--',
+        threats: '--',
+        safe: '--',
+        social: '--',
+      }
+    }
+
+    const now = Date.now()
+    const oneWeekMs = 7 * 24 * 60 * 60 * 1000
+    const twoWeeksMs = 14 * 24 * 60 * 60 * 1000
+
+    const currentPeriod = historyRecords.filter((r) => {
+      if (!r.scanned_at) return false
+      const t = new Date(r.scanned_at).getTime()
+      return !isNaN(t) && t >= now - oneWeekMs
+    })
+
+    const prevPeriod = historyRecords.filter((r) => {
+      if (!r.scanned_at) return false
+      const t = new Date(r.scanned_at).getTime()
+      return !isNaN(t) && t < now - oneWeekMs && t >= now - twoWeeksMs
+    })
+
+    const computeDelta = (currCount: number, prevCount: number, allTimeCount: number) => {
+      if (prevCount > 0) {
+        const pct = Math.round(((currCount - prevCount) / prevCount) * 100)
+        return pct > 0 ? `↑ ${pct}%` : pct < 0 ? `↓ ${Math.abs(pct)}%` : '0%'
+      }
+      if (currCount > 0) {
+        return `+${currCount} this wk`
+      }
+      if (allTimeCount > 0) {
+        return 'All-time'
+      }
+      return '--'
+    }
+
+    return {
+      total: computeDelta(currentPeriod.length, prevPeriod.length, totalScans),
+      threats: computeDelta(
+        currentPeriod.filter((r) => r.risk_category !== 'safe').length,
+        prevPeriod.filter((r) => r.risk_category !== 'safe').length,
+        threatsDetected
+      ),
+      safe: computeDelta(
+        currentPeriod.filter((r) => r.risk_category === 'safe').length,
+        prevPeriod.filter((r) => r.risk_category === 'safe').length,
+        safeCount
+      ),
+      social: computeDelta(
+        currentPeriod.filter((r) => r.scanner_type === 'social').length,
+        prevPeriod.filter((r) => r.scanner_type === 'social').length,
+        profilesChecked
+      ),
+    }
+  }, [historyRecords, totalScans, threatsDetected, safeCount, profilesChecked])
+
   return (
     <div className="space-y-6 max-w-[1536px] mx-auto select-none">
       {/* ======================================================== */}
@@ -159,7 +220,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[10px] font-mono text-[#00D9FF] font-bold">↑ 12%</span>
+              <span className="text-[10px] font-mono text-[#00D9FF] font-bold">{trends.total}</span>
               <div className="flex items-end gap-0.5 h-4">
                 <div className="w-1 bg-[#00D9FF]/40 rounded-full h-1.5" />
                 <div className="w-1 bg-[#00D9FF]/60 rounded-full h-2.5" />
@@ -185,7 +246,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[10px] font-mono text-red-400 font-bold">↑ 28%</span>
+              <span className="text-[10px] font-mono text-red-400 font-bold">{trends.threats}</span>
               <div className="flex items-end gap-0.5 h-4">
                 <div className="w-1 bg-red-500/40 rounded-full h-1.5" />
                 <div className="w-1 bg-red-500/60 rounded-full h-2.5" />
@@ -211,7 +272,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[10px] font-mono text-[#10B981] font-bold">↑ 18%</span>
+              <span className="text-[10px] font-mono text-[#10B981] font-bold">{trends.safe}</span>
               <div className="flex items-end gap-0.5 h-4">
                 <div className="w-1 bg-[#10B981]/40 rounded-full h-2" />
                 <div className="w-1 bg-[#10B981]/60 rounded-full h-3" />
@@ -237,7 +298,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[10px] font-mono text-[#C084FC] font-bold">↑ 33%</span>
+              <span className="text-[10px] font-mono text-[#C084FC] font-bold">{trends.social}</span>
               <div className="flex items-end gap-0.5 h-4">
                 <div className="w-1 bg-[#A855F7]/40 rounded-full h-1.5" />
                 <div className="w-1 bg-[#A855F7]/60 rounded-full h-2.5" />
@@ -294,6 +355,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         {/* Col 2: Top Threat Indicators (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col">
           <TopThreatIndicators
+            indicators={stats?.top_threat_indicators}
             onViewDetails={() => onNavigateTab && onNavigateTab('intelligence')}
           />
         </div>
