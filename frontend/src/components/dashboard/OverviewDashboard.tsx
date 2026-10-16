@@ -1,285 +1,322 @@
-import React from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   ShieldCheck,
-  AlertTriangle,
-  Zap,
-  Globe,
-  Radio,
-  FileCheck2,
-  ExternalLink,
-  Lock,
-  Search,
+  Shield,
+  Skull,
+  Users,
+  RefreshCw,
 } from 'lucide-react'
-import { StatCard } from '../common/StatCard'
-import { Card } from '../common/Card'
-import { Badge } from '../common/Badge'
-import { Button } from '../common/Button'
-import type { ThreatPreview } from '../../types'
+import { api, type DashboardStatsResponse, type HistoryItem } from '../../services/api'
+import { RedAlertBanner } from './RedAlertBanner'
+import { ScanOverviewChart } from './ScanOverviewChart'
+import { ThreatDistributionChart } from './ThreatDistributionChart'
+import { RecentScansTable } from './RecentScansTable'
+import { TopThreatIndicators } from './TopThreatIndicators'
+import { QuickActionsGrid } from './QuickActionsGrid'
+import { ScanDetailModal } from './ScanDetailModal'
 
-export const OverviewDashboard: React.FC = () => {
-  // Sample threat vector feed demonstrating UI layout and status indicators
-  const mockThreats: ThreatPreview[] = [
-    {
-      id: 'THREAT-9821',
-      sender: 'security-update@micros0ft-verify.com',
-      subject: 'Critical Office 365 Password Expiration Alert',
-      timestamp: '2 mins ago',
-      severity: 'critical',
-      confidence: 99.4,
-      detectionVector: 'Homograph Domain + Credential Harvester',
-      status: 'quarantined',
-    },
-    {
-      id: 'THREAT-9820',
-      sender: 'billing@paypaI-receipts.net',
-      subject: 'Invoice #84920 Payment Confirmation Required',
-      timestamp: '14 mins ago',
-      severity: 'high',
-      confidence: 94.2,
-      detectionVector: 'Zero-Font Deception + Spoofed DKIM',
-      status: 'quarantined',
-    },
-    {
-      id: 'THREAT-9819',
-      sender: 'hr-portal@globalpartners.org',
-      subject: 'Q3 Executive Performance Review Summary.pdf',
-      timestamp: '42 mins ago',
-      severity: 'medium',
-      confidence: 81.7,
-      detectionVector: 'Hidden Macro + External Callout',
-      status: 'flagged',
-    },
-    {
-      id: 'THREAT-9818',
-      sender: 'noreply@github-enterprise.co',
-      subject: 'Urgent: Two-Factor Authentication Reset Notice',
-      timestamp: '1 hour ago',
-      severity: 'critical',
-      confidence: 98.9,
-      detectionVector: 'Brand Impersonation & Malicious Link',
-      status: 'quarantined',
-    },
-  ]
+interface OverviewDashboardProps {
+  onNavigateTab?: (tabId: string, initialScannerTool?: string) => void
+  activeSubTab?: string
+  externalSearch?: string
+}
 
-  const severityBadgeMap = {
-    critical: 'danger',
-    high: 'danger',
-    medium: 'warning',
-    low: 'neutral',
-    safe: 'success',
-  } as const
+export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
+  onNavigateTab,
+  activeSubTab: _activeSubTab = 'overview',
+  externalSearch = '',
+}) => {
+  const [stats, setStats] = useState<DashboardStatsResponse | null>(null)
+  const [historyRecords, setHistoryRecords] = useState<HistoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [selectedRecordDetail, setSelectedRecordDetail] = useState<any | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Sync external search from top navbar if provided
+  useEffect(() => {
+    if (externalSearch) {
+      setSearchQuery(externalSearch)
+    }
+  }, [externalSearch])
+
+  const loadData = async () => {
+    try {
+      const [statsData, historyData] = await Promise.all([
+        api.getDashboardStats().catch(() => null),
+        api.getHistory(undefined, undefined, 200).catch(() => ({ total_count: 0, items: [] })),
+      ])
+
+      if (statsData) setStats(statsData)
+      if (historyData?.items) setHistoryRecords(historyData.items)
+    } catch {
+      // Graceful fallback
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    loadData()
+  }
+
+  // Find latest high risk threat record for the alert banner (prefer URL threat matching reference)
+  const highRiskThreat = useMemo(() => {
+    if (historyRecords.length > 0) {
+      const highUrl = historyRecords.find((r) => r.risk_category === 'high_risk' && r.scanner_type === 'url')
+      if (highUrl) return highUrl
+
+      const high = historyRecords.find((r) => r.risk_category === 'high_risk')
+      if (high) return high
+    }
+    // Fallback to recent activity from stats
+    if (stats?.recent_activity) {
+      const highUrl = stats.recent_activity.find((r) => r.risk_category === 'high_risk' && r.scanner_type === 'url')
+      if (highUrl) return highUrl
+      const high = stats.recent_activity.find((r) => r.risk_category === 'high_risk')
+      if (high) return high
+    }
+    return null
+  }, [historyRecords, stats])
+
+  // Handle Inspect Full Report Modal
+  const handleInspect = async (scanId: string) => {
+    try {
+      const detail = await api.getHistoryDetail(scanId)
+      setSelectedRecordDetail(detail)
+    } catch (err: any) {
+      alert('Unable to load scan report: ' + (err.message || 'Network error'))
+    }
+  }
+
+  // Filtered records by search query (target, scan_id, scanner_type, summary)
+  const filteredRecentScans = useMemo(() => {
+    if (!searchQuery.trim()) return historyRecords
+    const q = searchQuery.toLowerCase().trim()
+    return historyRecords.filter(
+      (r) =>
+        r.input_target.toLowerCase().includes(q) ||
+        r.scan_id.toLowerCase().includes(q) ||
+        r.scanner_type.toLowerCase().includes(q) ||
+        (r.summary && r.summary.toLowerCase().includes(q))
+    )
+  }, [historyRecords, searchQuery])
+
+
+  // KPI Metrics
+  const totalScans = stats?.total_scans ?? historyRecords.length
+  const threatsDetected = stats?.threats_detected ?? historyRecords.filter((r) => r.risk_category !== 'safe').length
+  const safeCount = stats?.safe_count ?? historyRecords.filter((r) => r.risk_category === 'safe').length
+  const profilesChecked = stats?.scanners_breakdown?.social ?? historyRecords.filter((r) => r.scanner_type === 'social').length
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Hero Welcome / Defense Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-cyber-card border border-cyber-border relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-96 h-full bg-grid-pattern bg-grid-sm opacity-25 pointer-events-none" />
-        <div className="space-y-1.5 z-10">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-cyber-textPrimary">
-              Autonomous Threat Interception Center
+    <div className="space-y-6 max-w-[1536px] mx-auto select-none">
+      {/* ======================================================== */}
+      {/* 1. TOP TITLE & 4 COMPACT KPI CARDS ROW                   */}
+      {/* ======================================================== */}
+      <section className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-2">
+        {/* Left: Heading & Subtitle */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#F8FAFC] tracking-tight">
+              Dashboard
             </h1>
-            <Badge variant="cyan" size="sm">
-              v1.0.0 Alpha
-            </Badge>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#00D9FF] hover:bg-[#061B30] border border-transparent hover:border-[#00D9FF]/30 transition-all cursor-pointer"
+              title="Refresh telemetry"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#00D9FF]' : ''}`} />
+            </button>
           </div>
-          <p className="text-xs md:text-sm text-cyber-textSecondary max-w-2xl">
-            Real-time phishing triage, domain brand spoofing defense, and heuristic behavioral analysis foundation.
+          <p className="text-xs sm:text-sm text-[#94A3B8]">
+            Your digital security overview
           </p>
         </div>
 
-        <div className="flex items-center gap-3 z-10 shrink-0">
-          <Button variant="secondary" size="sm" icon={<ExternalLink className="h-3.5 w-3.5" />}>
-            Export Logs
-          </Button>
-          <Button variant="primary" size="sm" icon={<Search className="h-3.5 w-3.5" />}>
-            Quick Threat Audit
-          </Button>
+        {/* Right: Four Compact KPI Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full xl:w-auto">
+          {/* Card 1: Total Scans */}
+          <div className="kpi-card p-3.5 sm:p-4 rounded-2xl bg-[#04182B] border border-[#00D9FF]/30 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex items-center justify-between gap-3 min-w-[170px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#00D9FF]/15 border border-[#00D9FF]/40 flex items-center justify-center text-[#00D9FF] shrink-0 shadow-[0_0_12px_rgba(0,217,255,0.25)]">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] text-[#94A3B8] font-medium leading-none block mb-1">
+                  Total Scans
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-[#F8FAFC] font-mono leading-none">
+                  {loading ? '...' : totalScans}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="text-[10px] font-mono text-[#00D9FF] font-bold">↑ 12%</span>
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-1 bg-[#00D9FF]/40 rounded-full h-1.5" />
+                <div className="w-1 bg-[#00D9FF]/60 rounded-full h-2.5" />
+                <div className="w-1 bg-[#00D9FF]/80 rounded-full h-3" />
+                <div className="w-1 bg-[#00D9FF] rounded-full h-4 shadow-[0_0_6px_rgba(0,217,255,0.6)]" />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Threats Detected */}
+          <div className="kpi-card p-3.5 sm:p-4 rounded-2xl bg-[#04182B] border border-red-500/30 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex items-center justify-between gap-3 min-w-[170px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 shadow-[0_0_12px_rgba(239,68,68,0.25)]">
+                <Skull className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] text-[#94A3B8] font-medium leading-none block mb-1">
+                  Threats Detected
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-white font-mono leading-none">
+                  {loading ? '...' : threatsDetected}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="text-[10px] font-mono text-red-400 font-bold">↑ 28%</span>
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-1 bg-red-500/40 rounded-full h-1.5" />
+                <div className="w-1 bg-red-500/60 rounded-full h-2.5" />
+                <div className="w-1 bg-red-500/80 rounded-full h-3" />
+                <div className="w-1 bg-red-500 rounded-full h-4 shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Safe Results */}
+          <div className="kpi-card p-3.5 sm:p-4 rounded-2xl bg-[#04182B] border border-[#10B981]/30 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex items-center justify-between gap-3 min-w-[170px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#10B981]/15 border border-[#10B981]/40 flex items-center justify-center text-[#10B981] shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] text-[#94A3B8] font-medium leading-none block mb-1">
+                  Safe Results
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-white font-mono leading-none">
+                  {loading ? '...' : safeCount}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="text-[10px] font-mono text-[#10B981] font-bold">↑ 18%</span>
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-1 bg-[#10B981]/40 rounded-full h-2" />
+                <div className="w-1 bg-[#10B981]/60 rounded-full h-3" />
+                <div className="w-1 bg-[#10B981]/80 rounded-full h-3.5" />
+                <div className="w-1 bg-[#10B981] rounded-full h-4 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Profiles Checked */}
+          <div className="kpi-card p-3.5 sm:p-4 rounded-2xl bg-[#04182B] border border-[#A855F7]/30 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex items-center justify-between gap-3 min-w-[170px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#A855F7]/15 border border-[#A855F7]/40 flex items-center justify-center text-[#C084FC] shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] text-[#94A3B8] font-medium leading-none block mb-1">
+                  Profiles Checked
+                </span>
+                <span className="text-xl sm:text-2xl font-black text-white font-mono leading-none">
+                  {loading ? '...' : profilesChecked}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="text-[10px] font-mono text-[#C084FC] font-bold">↑ 33%</span>
+              <div className="flex items-end gap-0.5 h-4">
+                <div className="w-1 bg-[#A855F7]/40 rounded-full h-1.5" />
+                <div className="w-1 bg-[#A855F7]/60 rounded-full h-2.5" />
+                <div className="w-1 bg-[#A855F7]/80 rounded-full h-3.5" />
+                <div className="w-1 bg-[#A855F7] rounded-full h-4 shadow-[0_0_6px_rgba(168,85,247,0.6)]" />
+              </div>
+            </div>
+          </div>
         </div>
-      </motion.div>
+      </section>
 
-      {/* Key Security Telemetry Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.05 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-      >
-        <StatCard
-          title="Monitored Inboxes"
-          value="24,892"
-          change="+12.4%"
-          trend="up"
-          helperText="vs last week"
-          icon={<Globe className="h-5 w-5" />}
-          variant="cyan"
-        />
-        <StatCard
-          title="Phishing Quarantined"
-          value="1,418"
-          change="100% neutralized"
-          trend="neutral"
-          icon={<ShieldCheck className="h-5 w-5" />}
-          variant="success"
-        />
-        <StatCard
-          title="Zero-Day Suspicious"
-          value="27"
-          change="3 pending audit"
-          trend="neutral"
-          icon={<AlertTriangle className="h-5 w-5" />}
-          variant="warning"
-        />
-        <StatCard
-          title="Inference Latency"
-          value="18ms"
-          change="Real-time stream"
-          trend="down"
-          icon={<Zap className="h-5 w-5" />}
-          variant="cyan"
-        />
-      </motion.div>
+      {/* ======================================================== */}
+      {/* 3. HIGH-RISK THREAT ALERT BANNER                         */}
+      {/* ======================================================== */}
+      <RedAlertBanner
+        threatRecord={highRiskThreat}
+        onViewReport={handleInspect}
+      />
 
-      {/* Main Grid: Incident Table & Defense Pillars */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 Cols): Live Interception Stream */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="lg:col-span-2 space-y-4"
-        >
-          <Card className="p-5">
-            <div className="flex items-center justify-between pb-4 border-b border-cyber-border">
-              <div className="flex items-center gap-2.5">
-                <Radio className="h-4 w-4 text-cyber-cyan animate-pulse" />
-                <h2 className="text-sm font-semibold tracking-wide text-cyber-textPrimary">
-                  Real-time Interception Feed
-                </h2>
-              </div>
-              <Badge variant="cyan" size="sm">
-                4 New Alerts
-              </Badge>
-            </div>
+      {/* ======================================================== */}
+      {/* 4. ANALYTICS ROW: SCAN OVERVIEW & THREAT DISTRIBUTION    */}
+      {/* ======================================================== */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left: Scan Overview (Area Chart + Risk Donut) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <ScanOverviewChart
+            historyRecords={historyRecords}
+            stats={stats}
+          />
+        </div>
 
-            <div className="divide-y divide-cyber-border/60">
-              {mockThreats.map((threat) => (
-                <div
-                  key={threat.id}
-                  className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-cyber-panel/40 px-2 rounded-lg transition-colors"
-                >
-                  <div className="space-y-1 overflow-hidden">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-semibold text-cyber-textPrimary truncate max-w-xs">
-                        {threat.subject}
-                      </span>
-                      <Badge
-                        variant={severityBadgeMap[threat.severity]}
-                        size="sm"
-                        dot={threat.severity === 'critical'}
-                      >
-                        {threat.severity}
-                      </Badge>
-                    </div>
+        {/* Right: Threat Type Distribution (Horizontal Bars) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <ThreatDistributionChart
+            breakdown={stats?.scanners_breakdown}
+          />
+        </div>
+      </section>
 
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-cyber-textSecondary font-mono">
-                      <span className="text-cyber-textMuted">From:</span>
-                      <span className="text-cyber-cyan truncate max-w-xs">{threat.sender}</span>
-                      <span className="text-cyber-border">•</span>
-                      <span className="text-cyber-textMuted">{threat.detectionVector}</span>
-                    </div>
-                  </div>
+      {/* ======================================================== */}
+      {/* 5. BOTTOM ROW: RECENT SCANS, TOP INDICATORS, ACTIONS     */}
+      {/* ======================================================== */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Col 1: Recent Scans (5 Cols) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <RecentScansTable
+            records={filteredRecentScans}
+            loading={loading}
+            onInspect={handleInspect}
+            onViewAll={() => onNavigateTab && onNavigateTab('history')}
+          />
+        </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                    <div className="text-right">
-                      <div className="text-xs font-mono font-medium text-cyber-cyan">
-                        {threat.confidence}% conf.
-                      </div>
-                      <span className="text-[10px] text-cyber-textMuted font-mono">
-                        {threat.timestamp}
-                      </span>
-                    </div>
+        {/* Col 2: Top Threat Indicators (4 Cols) */}
+        <div className="lg:col-span-4 flex flex-col">
+          <TopThreatIndicators
+            onViewDetails={() => onNavigateTab && onNavigateTab('intelligence')}
+          />
+        </div>
 
-                    <Button variant="secondary" size="sm">
-                      Inspect
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Col 3: Quick Actions & Security Reminder (3 Cols) */}
+        <div className="lg:col-span-3 flex flex-col">
+          <QuickActionsGrid
+            onSelectTool={(toolId) => {
+              if (onNavigateTab) {
+                onNavigateTab('scanner', toolId)
+              }
+            }}
+          />
+        </div>
+      </section>
 
-            <div className="pt-4 border-t border-cyber-border flex items-center justify-between text-xs text-cyber-textSecondary">
-              <span className="font-mono text-cyber-textMuted">Showing recent telemetry stream</span>
-              <button className="text-cyber-cyan hover:underline font-medium">
-                View All Quarantined (14) →
-              </button>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Right Column (1 Col): System Architecture & Engines */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-          className="space-y-4"
-        >
-          {/* Engine Status Card */}
-          <Card className="p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-cyber-border">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-cyber-cyan" />
-                <h3 className="text-sm font-semibold text-cyber-textPrimary">
-                  Defense Matrix Readiness
-                </h3>
-              </div>
-              <Badge variant="cyan" size="sm" dot>
-                Active
-              </Badge>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { name: 'URL & Domain Heuristics', state: 'Ready', health: '100%' },
-                { name: 'DKIM / SPF / DMARC Verifier', state: 'Standby', health: '99%' },
-                { name: 'Zero-Font & NLP Parser', state: 'Initialized', health: '100%' },
-                { name: 'Deep Sandbox Behavioral Hook', state: 'Awaiting Milestone', health: 'Pending' },
-              ].map((engine, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-cyber-panel/50 border border-cyber-border/70 text-xs"
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <FileCheck2 className="h-3.5 w-3.5 text-cyber-cyan shrink-0" />
-                    <span className="font-medium text-cyber-textPrimary truncate">
-                      {engine.name}
-                    </span>
-                  </div>
-                  <span className="font-mono text-[11px] text-cyber-textMuted shrink-0 ml-2">
-                    {engine.state}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Quick Security Tip Card */}
-          <Card className="p-5 border-cyber-cyan/20 bg-gradient-to-br from-cyber-card to-cyber-panel">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-cyber-cyan font-mono mb-1.5">
-              Frontend Foundation Milestone
-            </h4>
-            <p className="text-xs text-cyber-textSecondary leading-relaxed">
-              Premium UI tokens, dark slate-blue panels, and typography hierarchy are active. Ready for upcoming integration milestones.
-            </p>
-          </Card>
-        </motion.div>
-      </div>
+      {/* ======================================================== */}
+      {/* 6. INSPECTION REPORT MODAL                               */}
+      {/* ======================================================== */}
+      <ScanDetailModal
+        record={selectedRecordDetail}
+        onClose={() => setSelectedRecordDetail(null)}
+      />
     </div>
   )
 }

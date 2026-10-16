@@ -5,7 +5,7 @@ export const SaferDigitalWorld: React.FC = () => {
   const compId = useId().replace(/:/g, '')
 
   return (
-    <section className="relative w-full py-16 lg:py-28 bg-[#080D1A] border-t border-[#22D3EE]/15 overflow-hidden">
+    <section className="relative w-full py-10 sm:py-12 lg:py-16 bg-[#080D1A] border-t border-[#22D3EE]/15 overflow-hidden">
       {/* Background ambient glow */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#22D3EE]/5 rounded-full blur-[100px] pointer-events-none" />
 

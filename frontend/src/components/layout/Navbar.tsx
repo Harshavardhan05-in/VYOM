@@ -1,104 +1,181 @@
-import React from 'react'
-import { Shield, Bell, Search, Activity, Cpu, RotateCcw, Home } from 'lucide-react'
-import { Badge } from '../common/Badge'
-import { Button } from '../common/Button'
+import React, { useState } from 'react'
+import { Home, LayoutGrid, Info, Search, RotateCcw, Menu, X } from 'lucide-react'
+import { PhishShieldLogo } from '../common/PhishShieldLogo'
 
 interface NavbarProps {
   onToggleSidebar?: () => void
   onReplayIntro?: () => void
   onReturnHome?: () => void
+  onNavigateAbout?: () => void
+  onNavigateDashboard?: () => void
+  onSearch?: (query: string) => void
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onReplayIntro, onReturnHome }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onReplayIntro,
+  onReturnHome,
+  onNavigateAbout,
+  onNavigateDashboard,
+  onSearch,
+}) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setSearchTerm(val)
+    if (onSearch) {
+      onSearch(val)
+    }
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (onSearch) {
+      onSearch(searchTerm.trim())
+    }
+  }
+
   return (
-    <header className="h-16 border-b border-cyber-border bg-[#0B1120]/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
-      {/* Brand & Status */}
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-40 w-full bg-[#03101F] border-b border-[rgba(0,217,255,0.25)] h-[72px] flex items-center px-4 sm:px-6 lg:px-8 select-none">
+      <div className="w-full max-w-[1536px] mx-auto flex items-center justify-between">
+        {/* Left: Brand Identity with PhishShield AI Shield Logo, Name, and Tagline */}
         <div
           onClick={onReturnHome}
-          className={`flex items-center gap-3 ${onReturnHome ? 'cursor-pointer group' : ''}`}
+          className={`flex items-center gap-3 select-none shrink-0 ${onReturnHome ? 'cursor-pointer group' : ''}`}
           title={onReturnHome ? 'Return to Homepage' : undefined}
         >
-          <div className="h-9 w-9 rounded-lg bg-[#111C30] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE] shadow-[0_0_12px_rgba(34,211,238,0.2)]">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base tracking-wide text-[#F8FAFC]">
-                PhishShield <span className="text-[#22D3EE] font-mono">AI</span>
+          <PhishShieldLogo className="w-8 h-9 sm:w-9 sm:h-10 transition-transform duration-300 group-hover:scale-105 shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 leading-none whitespace-nowrap">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-[#F8FAFC]">
+                PhishShield <span className="text-[#00D9FF]">AI</span>
               </span>
-              <Badge variant="cyan" size="sm" dot>
-                Online
-              </Badge>
             </div>
-            <p className="text-[10px] text-[#94A3B8] tracking-wider uppercase font-mono">
-              Autonomous Cybersecurity Shield
-            </p>
+            <span className="text-[10px] sm:text-[11px] text-[#94A3B8] font-normal leading-tight tracking-normal mt-0.5 whitespace-nowrap hidden sm:block">
+              Intelligent Digital Threat Protection
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Global Search / Action Bar */}
-      <div className="hidden md:flex items-center gap-3 flex-1 max-w-md mx-8">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
-          <input
-            type="text"
-            placeholder="Search threats, quarantined URLs, headers, or logs..."
-            className="w-full bg-[#0D1B2A] border border-[#22D3EE]/25 rounded-lg pl-9 pr-4 py-1.5 text-xs text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:border-[#22D3EE] focus:ring-1 focus:ring-[#22D3EE]/40 transition-all font-sans"
-            readOnly
-          />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#94A3B8] border border-[#22D3EE]/20 rounded px-1.5 py-0.5">
-            ⌘K
-          </span>
-        </div>
-      </div>
-
-      {/* Action Controls & User Presence */}
-      <div className="flex items-center gap-3">
-        {onReturnHome && (
-          <Button
-            variant="ghost"
-            size="sm"
+        {/* Center: Nav Links matching reference blueprint */}
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+          <button
             onClick={onReturnHome}
-            icon={<Home className="h-3.5 w-3.5 text-[#22D3EE]" />}
-            title="Return to Homepage"
+            className="flex items-center gap-2 text-sm font-medium text-[#CBD5E1] hover:text-[#00D9FF] transition-colors cursor-pointer"
           >
-            Homepage
-          </Button>
-        )}
+            <Home className="w-4 h-4" />
+            <span>Home</span>
+          </button>
 
-        {onReplayIntro && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onReplayIntro}
-            icon={<RotateCcw className="h-3.5 w-3.5 text-[#22D3EE]" />}
-            title="Replay Cinematic Cyber Intro"
+          {/* Dashboard: Active Pill with cyan border, background, and neon glow */}
+          <button
+            data-nav="dashboard"
+            onClick={onNavigateDashboard}
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#00D9FF] bg-[#00D9FF]/10 text-[#00D9FF] text-sm font-semibold shadow-[0_0_12px_rgba(0,217,255,0.25)] hover:bg-[#00D9FF]/20 transition-all cursor-pointer"
           >
-            Replay Intro
-          </Button>
-        )}
+            <LayoutGrid className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
 
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-md bg-[#111C30] border border-[#22D3EE]/20 text-xs font-mono text-[#CBD5E1]">
-          <Cpu className="h-3.5 w-3.5 text-[#22D3EE]" />
-          <span>Core: Idle</span>
+          <button
+            onClick={onNavigateAbout}
+            className="flex items-center gap-2 text-sm font-medium text-[#CBD5E1] hover:text-[#00D9FF] transition-colors cursor-pointer"
+          >
+            <Info className="w-4 h-4" />
+            <span>About</span>
+          </button>
+        </nav>
+
+        {/* Right: Search Input & Controls (Rebalanced after removing Help, Bell, and Profile) */}
+        <div className="hidden sm:flex items-center gap-3">
+          <form onSubmit={handleSearchSubmit} className="relative w-64 lg:w-80">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="Search anything..."
+              className="w-full pl-10 pr-4 py-2 bg-[#04182B] border border-[rgba(0,217,255,0.25)] rounded-xl text-xs sm:text-sm text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:border-[#00D9FF] focus:shadow-[0_0_12px_rgba(0,217,255,0.25)] transition-all font-sans"
+            />
+          </form>
+
+          {onReplayIntro && (
+            <button
+              onClick={onReplayIntro}
+              className="p-2 rounded-xl text-[#94A3B8] hover:text-[#00D9FF] hover:bg-[#04182B] border border-transparent hover:border-[#00D9FF]/30 transition-all cursor-pointer"
+              title="Replay Cinematic Cyber Intro"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        <button
-          className="relative p-2 rounded-lg text-[#CBD5E1] hover:text-[#22D3EE] hover:bg-[#111C30] transition-colors border border-transparent hover:border-[#22D3EE]/30"
-          aria-label="Alerts"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#22D3EE] animate-pulse" />
-        </button>
-
-        <div className="h-4 w-px bg-[#22D3EE]/20 mx-1" />
-
-        <Button variant="outline" size="sm" icon={<Activity className="h-3.5 w-3.5" />}>
-          Telemetry
-        </Button>
+        {/* Mobile Hamburger Button */}
+        <div className="flex items-center gap-2 md:hidden">
+          {onReplayIntro && (
+            <button
+              onClick={onReplayIntro}
+              className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#00D9FF]"
+              title="Replay Intro"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg text-[#CBD5E1] hover:text-[#00D9FF] hover:bg-[#04182B] border border-transparent hover:border-[#00D9FF]/30"
+            aria-label="Toggle mobile menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-[72px] left-0 w-full bg-[#03101F] border-b border-[#00D9FF]/30 p-4 space-y-4 shadow-2xl z-50 animate-fadeIn">
+          <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="Search scans, URLs, or reports..."
+              className="w-full pl-9 pr-4 py-2 bg-[#04182B] border border-[rgba(0,217,255,0.30)] rounded-xl text-xs text-[#F8FAFC] placeholder-[#94A3B8]"
+            />
+          </form>
+
+          <nav className="flex flex-col space-y-2">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false)
+                if (onReturnHome) onReturnHome()
+              }}
+              className="flex items-center gap-2 p-2.5 rounded-lg text-sm text-[#CBD5E1] hover:bg-[#04182B] hover:text-[#00D9FF]"
+            >
+              <Home className="w-4 h-4" />
+              <span>Home</span>
+            </button>
+
+            <div className="flex items-center gap-2 p-2.5 rounded-lg text-sm text-[#00D9FF] bg-[#00D9FF]/10 border border-[#00D9FF]/30 font-semibold">
+              <LayoutGrid className="w-4 h-4" />
+              <span>Dashboard</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false)
+                if (onNavigateAbout) onNavigateAbout()
+              }}
+              className="flex items-center gap-2 p-2.5 rounded-lg text-sm text-[#CBD5E1] hover:bg-[#04182B] hover:text-[#00D9FF]"
+            >
+              <Info className="w-4 h-4" />
+              <span>About</span>
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }

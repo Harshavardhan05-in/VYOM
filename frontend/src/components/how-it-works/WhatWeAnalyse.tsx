@@ -76,10 +76,10 @@ const categories: AnalysisCategory[] = [
 
 export const WhatWeAnalyse: React.FC = () => {
   return (
-    <section className="relative w-full py-16 lg:py-24 bg-[#080D1A] border-t border-[#22D3EE]/15">
+    <section className="relative w-full py-10 sm:py-12 lg:py-14 bg-[#080D1A] border-t border-[#22D3EE]/15">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3 mb-14">
+        <div className="text-center max-w-3xl mx-auto space-y-2.5 mb-8 sm:mb-9">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#22D3EE]/30 bg-[#111C30]/70 text-xs font-mono font-medium text-[#22D3EE] uppercase tracking-wider">
             DETECTION HEURISTICS
           </div>

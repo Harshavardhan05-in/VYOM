@@ -1,18 +1,30 @@
 import React, { useState, useEffect } from 'react'
 import { HomePage } from './components/home/HomePage'
 import { HowItWorksPage } from './components/how-it-works/HowItWorksPage'
+import { AboutUsPage } from './components/about/AboutUsPage'
 import { AppShell } from './components/layout/AppShell'
 import { OverviewDashboard } from './components/dashboard/OverviewDashboard'
+import { ScannerConsole } from './components/dashboard/ScannerConsole'
+import { ScanHistoryView } from './components/dashboard/ScanHistoryView'
+import { QuarantineVault } from './components/dashboard/QuarantineVault'
+import { SandboxMatrix } from './components/dashboard/SandboxMatrix'
+import { ThreatIntelligence } from './components/dashboard/ThreatIntelligence'
+import { SystemSettings } from './components/dashboard/SystemSettings'
+import { SocialShieldPage } from './components/scanners/SocialShieldPage'
 import { DigitalAwakeningIntro } from './components/intro/DigitalAwakeningIntro'
-import { Card } from './components/common/Card'
-import { Badge } from './components/common/Badge'
-import { Terminal, Shield, Inbox, Database, Sliders } from 'lucide-react'
 
 export const App: React.FC = () => {
   // Show intro on first visit by default on homepage, and allow replay
   const [showIntro, setShowIntro] = useState<boolean>(() => {
     try {
-      if (typeof window !== 'undefined' && (window.location.pathname === '/how-it-works' || window.location.search.includes('nointro=true'))) {
+      if (
+        typeof window !== 'undefined' &&
+        (window.location.pathname === '/about' ||
+          window.location.pathname === '/how-it-works' ||
+          window.location.pathname === '/social' ||
+          window.location.pathname === '/social-shield' ||
+          window.location.search.includes('nointro=true'))
+      ) {
         return false
       }
       return !sessionStorage.getItem('phishshield_intro_seen')
@@ -21,14 +33,21 @@ export const App: React.FC = () => {
     }
   })
 
-  // View state: 'home' (reference landing page), 'how-it-works', or 'dashboard' (defense console)
-  const [currentView, setCurrentView] = useState<'home' | 'how-it-works' | 'dashboard'>(() => {
+  // View state: 'home' (reference landing page), 'how-it-works', 'about', or 'dashboard' (defense console)
+  const [currentView, setCurrentView] = useState<'home' | 'how-it-works' | 'about' | 'dashboard'>(() => {
     try {
       if (typeof window !== 'undefined') {
+        if (window.location.pathname === '/about') {
+          return 'about'
+        }
         if (window.location.pathname === '/how-it-works') {
           return 'how-it-works'
         }
-        if (window.location.pathname === '/dashboard') {
+        if (
+          window.location.pathname === '/dashboard' ||
+          window.location.pathname === '/social' ||
+          window.location.pathname === '/social-shield'
+        ) {
           return 'dashboard'
         }
       }
@@ -37,14 +56,54 @@ export const App: React.FC = () => {
     }
     return 'home'
   })
-  const [dashboardTab, setDashboardTab] = useState<string>('overview')
+
+  const [dashboardTab, setDashboardTab] = useState<string>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        const tabParam = params.get('tab')
+        if (tabParam) return tabParam
+        if (window.location.pathname === '/social' || window.location.pathname === '/social-shield') {
+          return 'social'
+        }
+      }
+    } catch {
+      // Ignore
+    }
+    return 'overview'
+  })
+
+  const [selectedScannerTool, setSelectedScannerTool] = useState<string>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        const toolParam = params.get('tool')
+        if (toolParam) return toolParam
+        if (window.location.pathname === '/social' || window.location.pathname === '/social-shield') {
+          return 'social'
+        }
+      }
+    } catch {
+      // Ignore
+    }
+    return 'url'
+  })
 
   // Listen for browser back / forward navigation
   useEffect(() => {
     const handlePopState = () => {
       try {
-        if (window.location.pathname === '/how-it-works') {
+        if (window.location.pathname === '/about') {
+          setCurrentView('about')
+        } else if (window.location.pathname === '/how-it-works') {
           setCurrentView('how-it-works')
+        } else if (
+          window.location.pathname === '/social' ||
+          window.location.pathname === '/social-shield'
+        ) {
+          setDashboardTab('social')
+          setSelectedScannerTool('social')
+          setCurrentView('dashboard')
         } else if (window.location.pathname === '/dashboard') {
           setCurrentView('dashboard')
         } else if (window.location.pathname === '/' || window.location.pathname === '') {
@@ -72,13 +131,16 @@ export const App: React.FC = () => {
     setShowIntro(true)
   }
 
-  const handleOpenDashboard = (tab: string = 'overview') => {
+  const handleOpenDashboard = (tab: string = 'overview', initialScannerTool?: string) => {
     try {
       if (window.location.pathname !== '/dashboard') {
         window.history.pushState({ view: 'dashboard' }, '', '/dashboard')
       }
     } catch {
       // Ignore
+    }
+    if (initialScannerTool) {
+      setSelectedScannerTool(initialScannerTool)
     }
     setDashboardTab(tab)
     setCurrentView('dashboard')
@@ -94,6 +156,18 @@ export const App: React.FC = () => {
       // Ignore
     }
     setCurrentView('how-it-works')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleNavigateAbout = () => {
+    try {
+      if (window.location.pathname !== '/about') {
+        window.history.pushState({ view: 'about' }, '', '/about')
+      }
+    } catch {
+      // Ignore
+    }
+    setCurrentView('about')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -121,6 +195,8 @@ export const App: React.FC = () => {
   const handleNavigateSectionFromHowItWorks = (sectionId: string) => {
     if (sectionId === 'how-it-works') {
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else if (sectionId === 'about') {
+      handleNavigateAbout()
     } else {
       handleReturnHome(sectionId)
     }
@@ -128,15 +204,16 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* 1. PHISHSHIELD AI — DIGITAL AWAKENING: 6-Second 3D Cinematic Intro Animation */}
+      {/* 1. PHISHSHIELD AI — DIGITAL AWAKENING: 4-Second Cinematic Intro Animation (3550ms + 450ms transition) */}
       {showIntro && <DigitalAwakeningIntro onComplete={handleIntroComplete} />}
 
-      {/* 2. Primary Route View: Homepage, How It Works, or Dashboard */}
+      {/* 2. Primary Route View: Homepage, How It Works, About, or Dashboard */}
       {currentView === 'home' ? (
         <HomePage
           onOpenDashboard={handleOpenDashboard}
           onReplayIntro={handleReplayIntro}
           onNavigateHowItWorks={handleNavigateHowItWorks}
+          onNavigateAbout={handleNavigateAbout}
         />
       ) : currentView === 'how-it-works' ? (
         <HowItWorksPage
@@ -145,114 +222,58 @@ export const App: React.FC = () => {
           onNavigateSection={handleNavigateSectionFromHowItWorks}
           onReplayIntro={handleReplayIntro}
         />
+      ) : currentView === 'about' ? (
+        <AboutUsPage
+          onNavigateHome={() => handleReturnHome()}
+          onOpenDashboard={handleOpenDashboard}
+        />
       ) : (
         <AppShell
-          key={dashboardTab}
+          key={`${dashboardTab}-${selectedScannerTool}`}
           onReplayIntro={handleReplayIntro}
           onReturnHome={() => handleReturnHome()}
+          onNavigateAbout={handleNavigateAbout}
+          onNavigateHowItWorks={handleNavigateHowItWorks}
           initialTab={dashboardTab}
+          initialScannerTool={selectedScannerTool}
         >
-          {(activeTab) => {
+          {(activeTab, onTabChange, searchQuery, currentScannerTool) => {
             switch (activeTab) {
               case 'overview':
-                return <OverviewDashboard />
+                return <OverviewDashboard onNavigateTab={onTabChange} externalSearch={searchQuery} />
+              case 'social':
+                return (
+                  <SocialShieldPage
+                    onNavigateTab={onTabChange}
+                    onNavigateHome={handleReturnHome}
+                    onNavigateHowItWorks={handleNavigateHowItWorks}
+                    onNavigateAbout={handleNavigateAbout}
+                  />
+                )
               case 'scanner':
-                return (
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    <Card className="p-8 text-center space-y-3 bg-[#0D1B2A] border border-[#22D3EE]/25">
-                      <div className="mx-auto h-12 w-12 rounded-xl bg-[#111C30] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.25)]">
-                        <Shield className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#F8FAFC]">Threat Scanner Console</h2>
-                      <p className="text-xs text-[#CBD5E1] max-w-md mx-auto">
-                        Analyse suspicious URLs, domain certificates, zero-font evasion, and DKIM/SPF headers.
-                      </p>
-                      <div className="pt-2">
-                        <Badge variant="cyan" size="sm">
-                          Scanner Engine Ready
-                        </Badge>
-                      </div>
-                    </Card>
-                  </div>
-                )
+                if (currentScannerTool === 'social') {
+                  return (
+                    <SocialShieldPage
+                      onNavigateTab={onTabChange}
+                      onNavigateHome={handleReturnHome}
+                      onNavigateHowItWorks={handleNavigateHowItWorks}
+                      onNavigateAbout={handleNavigateAbout}
+                    />
+                  )
+                }
+                return <ScannerConsole initialTool={currentScannerTool} />
+              case 'history':
+                return <ScanHistoryView />
               case 'quarantine':
-                return (
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    <Card className="p-8 text-center space-y-3 bg-[#0D1B2A] border border-[#22D3EE]/25">
-                      <div className="mx-auto h-12 w-12 rounded-xl bg-[#111C30] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.25)]">
-                        <Inbox className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#F8FAFC]">Quarantine Vault</h2>
-                      <p className="text-xs text-[#CBD5E1] max-w-md mx-auto">
-                        Centralized repository for quarantined malicious payloads, phishing emails, and spoofed headers.
-                      </p>
-                      <div className="pt-2">
-                        <Badge variant="neutral" size="sm">
-                          14 Secured Artifacts
-                        </Badge>
-                      </div>
-                    </Card>
-                  </div>
-                )
+                return <QuarantineVault />
               case 'sandbox':
-                return (
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    <Card className="p-8 text-center space-y-3 bg-[#0D1B2A] border border-[#22D3EE]/25">
-                      <div className="mx-auto h-12 w-12 rounded-xl bg-[#111C30] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.25)]">
-                        <Terminal className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#F8FAFC]">Sandbox Matrix</h2>
-                      <p className="text-xs text-cyber-textSecondary max-w-md mx-auto">
-                        Isolated execution environment placeholder for automated detonation and runtime payload tracing.
-                      </p>
-                      <div className="pt-2">
-                        <Badge variant="warning" size="sm">
-                          Detonation Module
-                        </Badge>
-                      </div>
-                    </Card>
-                  </div>
-                )
+                return <SandboxMatrix />
               case 'intelligence':
-                return (
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    <Card className="p-8 text-center space-y-3 bg-[#0D1B2A] border border-[#22D3EE]/25">
-                      <div className="mx-auto h-12 w-12 rounded-xl bg-[#111C30] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.25)]">
-                        <Database className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#F8FAFC]">Threat Feeds & Intelligence</h2>
-                      <p className="text-xs text-cyber-textSecondary max-w-md mx-auto">
-                        Aggregated feeds of newly recognized phishing kits, homoglyph domains, and compromised certificate authorities.
-                      </p>
-                      <div className="pt-2">
-                        <Badge variant="cyan" size="sm">
-                          Live Sync Ready
-                        </Badge>
-                      </div>
-                    </Card>
-                  </div>
-                )
+                return <ThreatIntelligence />
               case 'settings':
-                return (
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    <Card className="p-8 text-center space-y-3 bg-[#0D1B2A] border border-[#22D3EE]/25">
-                      <div className="mx-auto h-12 w-12 rounded-xl bg-[#111C30] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE] shadow-[0_0_16px_rgba(34,211,238,0.25)]">
-                        <Sliders className="h-6 w-6" />
-                      </div>
-                      <h2 className="text-lg font-bold text-[#F8FAFC]">System Settings</h2>
-                      <p className="text-xs text-cyber-textSecondary max-w-md mx-auto">
-                        Adjust defense thresholds, sensitivity scores, alert webhooks, and UI customization.
-                      </p>
-                      <div className="pt-2">
-                        <Badge variant="neutral" size="sm">
-                          Configuration Matrix
-                        </Badge>
-                      </div>
-                    </Card>
-                  </div>
-                )
+                return <SystemSettings />
               default:
-                return <OverviewDashboard />
+                return <OverviewDashboard onNavigateTab={onTabChange} externalSearch={searchQuery} />
             }
           }}
         </AppShell>

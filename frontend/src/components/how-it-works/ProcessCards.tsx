@@ -4,10 +4,10 @@ import { ArrowRight, ArrowDown } from 'lucide-react'
 export const ProcessCards: React.FC = () => {
 
   return (
-    <section className="relative w-full py-16 lg:py-24 bg-[#0B1120]">
+    <section className="relative w-full py-10 sm:py-12 lg:py-14 bg-[#0B1120]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3 mb-12 sm:mb-16">
+        <div className="text-center max-w-3xl mx-auto space-y-2.5 mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#22D3EE]/30 bg-[#111C30]/60 text-xs font-mono font-medium text-[#22D3EE] uppercase tracking-wider">
             STEP-BY-STEP WORKFLOW
           </div>

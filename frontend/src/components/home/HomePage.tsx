@@ -6,27 +6,26 @@ import { FinalCTA } from './FinalCTA'
 import { Footer } from './Footer'
 
 interface HomePageProps {
-  onOpenDashboard: (tab?: string) => void
+  onOpenDashboard: (tab?: string, toolId?: string) => void
   onReplayIntro?: () => void
   onNavigateHowItWorks: () => void
+  onNavigateAbout: () => void
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
   onOpenDashboard,
   onReplayIntro,
   onNavigateHowItWorks,
+  onNavigateAbout,
 }) => {
   const handleNavigateSection = (sectionId: string) => {
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else if (sectionId === 'how-it-works') {
       onNavigateHowItWorks()
-    } else if (sectionId === 'protection') {
-      const el = document.getElementById('protection')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' })
-      }
     } else if (sectionId === 'about') {
+      onNavigateAbout()
+    } else if (sectionId === 'protection') {
       const el = document.getElementById('protection')
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' })
@@ -35,11 +34,11 @@ export const HomePage: React.FC<HomePageProps> = ({
   }
 
   const handleSelectTool = (toolId: string) => {
-    // Navigate to appropriate scanner console view in dashboard
-    if (toolId === 'url-scanner') {
-      onOpenDashboard('scanner')
+    // Navigate to appropriate scanner console or social view in dashboard
+    if (toolId.includes('social')) {
+      onOpenDashboard('social', 'social')
     } else {
-      onOpenDashboard('scanner')
+      onOpenDashboard('scanner', toolId)
     }
   }
 

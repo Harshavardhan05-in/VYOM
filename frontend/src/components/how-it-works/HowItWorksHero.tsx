@@ -5,13 +5,13 @@ export const HowItWorksHero: React.FC = () => {
   const filterId = useId().replace(/:/g, '')
 
   return (
-    <section className="relative w-full overflow-hidden pt-8 pb-16 lg:pt-16 lg:pb-24 border-b border-[#22D3EE]/15">
+    <section className="relative w-full overflow-hidden pt-6 pb-8 lg:pt-10 lg:pb-12 border-b border-[#22D3EE]/15">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           {/* ======================================================== */}
           {/* LEFT COLUMN: BADGE, HEADINGS, SUBTITLE, DESCRIPTION      */}
           {/* ======================================================== */}
-          <div className="lg:col-span-6 space-y-6 lg:space-y-8 z-10">
+          <div className="lg:col-span-6 space-y-5 lg:space-y-6 z-10">
             {/* Outlined Cyan Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#22D3EE]/40 bg-[#111C30]/80 shadow-[0_0_12px_rgba(34,211,238,0.2)]">
               <span className="w-2 h-2 rounded-full bg-[#22D3EE] animate-pulse" />
@@ -61,7 +61,7 @@ export const HowItWorksHero: React.FC = () => {
           {/* ======================================================== */}
           <div className="lg:col-span-6 w-full flex items-center justify-center">
             <div
-              className="relative w-full h-[460px] sm:h-[520px] lg:h-[560px] flex items-center justify-center select-none overflow-visible group"
+              className="relative w-full h-[400px] sm:h-[450px] lg:h-[480px] flex items-center justify-center select-none overflow-visible group"
               aria-label="PhishShield AI Continuous 3D Security Shield Illustration"
             >
               {/* 1. Deep Ambient Radial Atmosphere & Cyan Glow */}
@@ -156,7 +156,7 @@ export const HowItWorksHero: React.FC = () => {
               </div>
 
               {/* 4. Circular Holographic Platform at Base (~4s cycle) */}
-              <div className="absolute bottom-6 sm:bottom-10 w-[360px] sm:w-[440px] h-[90px] pointer-events-none flex items-center justify-center">
+              <div className="absolute bottom-3 sm:bottom-6 w-[360px] sm:w-[440px] h-[90px] pointer-events-none flex items-center justify-center">
                 {/* Platform Projection Cone */}
                 <div
                   className="absolute inset-0 bg-gradient-to-t from-[#22D3EE]/15 via-[#22D3EE]/5 to-transparent blur-md rounded-[50%]"

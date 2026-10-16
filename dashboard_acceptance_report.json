@@ -1,0 +1,44 @@
+{
+  "success": true,
+  "console_errors": [],
+  "checks": {
+    "header": {
+      "has_brand": true,
+      "has_active_dashboard_pill": true,
+      "has_search_input": true
+    },
+    "kpi_cards": {
+      "has_total_scans": true,
+      "has_threats_detected": true
+    },
+    "red_alert_banner": {
+      "has_banner": true,
+      "has_threat_text": false,
+      "has_view_report_btn": true,
+      "preview": "HIGH RISK DETECTED! This URL is likely a malicious website.  Suspicious Top-Level Domain \u2014 TLD: .xyz. The domain uses the .xyz TLD, which ap"
+    },
+    "analytics_row": {
+      "has_area_line_chart": true,
+      "has_donut_chart": true,
+      "threat_bars_count": 6,
+      "has_date_filter": true
+    },
+    "bottom_row": {
+      "has_recent_scans_table": true,
+      "recent_rows_count": 5,
+      "has_top_indicators": true,
+      "has_quick_actions": true,
+      "has_security_reminder": true
+    },
+    "modal_test": {
+      "btn_clicked": true,
+      "modal_opened": true,
+      "closed": true
+    },
+    "navigation_tests": {
+      "quick_action_url": true,
+      "quick_action_file": true,
+      "navbar_about": true
+    }
+  }
+}
