@@ -39,9 +39,9 @@ export const RedAlertBanner: React.FC<RedAlertBannerProps> = ({
 
   const score = threatRecord.risk_score
   const summaryText =
-    threatRecord.summary && threatRecord.summary.length > 25
+    threatRecord.summary && threatRecord.summary.trim().length > 0
       ? threatRecord.summary
-      : 'Multiple security indicators suggest this may be a fraudulent website designed to steal your personal information.'
+      : `Critical threat indicators identified during ${threatRecord.scanner_type.toUpperCase()} security inspection.`
 
   return (
     <div

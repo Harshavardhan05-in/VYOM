@@ -66,13 +66,14 @@ def test_all_six_scanners_persist_and_update_stats(in_memory_db):
     assert res_file.risk_score >= 65  # High risk: double extension + PE header
     assert res_file.scan_id
 
-    # 3. QR Scanner (Empty or invalid image returns error, valid generates scan)
-    # Test valid 1x1 image that won't have QR but is validly parsed
+    # 3. QR Scanner (Real OpenCV QR matrix generation and decoding)
     import cv2
-    import numpy as np
-    blank_img = np.ones((100, 100, 3), dtype=np.uint8) * 255
-    _, png_bytes = cv2.imencode(".png", blank_img)
-    res_qr = decode_and_analyze_qr(png_bytes.tobytes(), "blank.png", db=in_memory_db)
+    encoder = cv2.QRCodeEncoder_create()
+    raw = encoder.encode("WIFI:S:MyNetwork;T:WPA;P:Secret123;;")
+    raw = cv2.copyMakeBorder(raw, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=255)
+    resized = cv2.resize(raw, (300, 300), interpolation=cv2.INTER_NEAREST)
+    _, png_bytes = cv2.imencode(".png", resized)
+    res_qr = decode_and_analyze_qr(png_bytes.tobytes(), "test_qr.png", db=in_memory_db)
     assert res_qr.scan_id
     assert res_qr.is_url is False
 

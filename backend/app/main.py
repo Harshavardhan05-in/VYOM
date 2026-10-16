@@ -1,6 +1,7 @@
 """
 PhishShield AI — FastAPI Application Entry Point
 """
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -48,11 +49,19 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-PRODUCTION_FRONTEND_ORIGIN = "https://phish-shield-ai-pink.vercel.app"
-cors_origins = list(dict.fromkeys([
-    *settings.allowed_origins,
-    PRODUCTION_FRONTEND_ORIGIN,
-]))
+PRODUCTION_FRONTEND_ORIGINS = [
+    "https://phish-shield-ai-pink.vercel.app",
+    "https://vyom-rouge.vercel.app",
+]
+
+cors_origins = list(
+    dict.fromkeys(
+        [
+            *settings.allowed_origins,
+            *PRODUCTION_FRONTEND_ORIGINS,
+        ]
+    )
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -63,12 +72,17 @@ app.add_middleware(
     allow_headers=["Content-Type", "Accept", "Authorization"],
 )
 
-from fastapi.exception_handlers import request_validation_exception_handler as default_validation_handler
+from fastapi.exception_handlers import (
+    request_validation_exception_handler as default_validation_handler,
+)
+
 
 # ── Error Handlers ────────────────────────────────────────────────────────────
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    logger.warning(f"Validation error on {request.method} {request.url.path}: {exc.errors()}")
+    logger.warning(
+        f"Validation error on {request.method} {request.url.path}: {exc.errors()}"
+    )
     return await default_validation_handler(request, exc)
 
 
