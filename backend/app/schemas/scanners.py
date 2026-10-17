@@ -202,3 +202,49 @@ class DashboardStatsResponse(BaseModel):
     top_threat_indicators: List[ThreatIndicatorItem] = []
     system_status: Dict[str, Any]
 
+
+# ── Gmail Add-on Protection Schemas ──────────────────────────────────────────
+
+class GmailScanRequest(BaseModel):
+    subject: Optional[str] = ""
+    sender: Optional[str] = ""
+    body: Optional[str] = ""
+    html_body: Optional[str] = None
+    extracted_links: Optional[List[str]] = None
+    raw_headers: Optional[str] = None
+    message_id: Optional[str] = None
+    thread_id: Optional[str] = None
+
+    @field_validator("body")
+    @classmethod
+    def validate_body(cls, v: Optional[str]) -> str:
+        return (v or "").strip()
+
+    @field_validator("html_body")
+    @classmethod
+    def validate_html(cls, v: Optional[str]) -> Optional[str]:
+        if v and len(v) > 262144:
+            raise ValueError("Email HTML exceeds maximum safety size limit of 256 KB.")
+        return v
+
+
+class GmailScanResponse(BaseModel):
+    scan_id: str
+    subject: str
+    sender: str
+    body_preview: str
+    extracted_urls: List[Dict[str, Any]]
+    detected_vectors: List[str]
+    risk_score: int                        # 0–100
+    risk_category: RiskCategory
+    summary: str
+    findings: List[SecurityFinding]
+    triggered_findings: List[SecurityFinding]
+    reasons: List[str]
+    recommended_actions: List[str]
+    web_report_url: str
+    scanned_at: str
+    analysis_method: str
+    limitations: List[str]
+
+

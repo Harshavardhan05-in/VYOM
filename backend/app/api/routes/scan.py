@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 
+from app.core.config import settings
 from app.schemas.scan import ScanRequest, ScanResponse, HealthResponse, ModelStatusResponse
 from app.schemas.scanners import (
     FileScanResponse, QRScanResponse,
@@ -16,12 +17,13 @@ from app.schemas.scanners import (
     SocialScanRequest, SocialScanResponse,
     HistoryListResponse, HistoryItem, DashboardStatsResponse,
     ThreatIndicatorItem,
+    GmailScanRequest, GmailScanResponse,
 )
 from app.services.scan_service import run_scan
 from app.services.file_service import analyze_file
 from app.services.qr_service import decode_and_analyze_qr
 from app.services.phone_service import analyze_phone_number
-from app.services.email_service import analyze_email_message
+from app.services.email_service import analyze_email_message, analyze_gmail_message
 from app.services.social_service import analyze_social_profile
 from app.ml.model_manager import model_manager
 from app.db.database import get_db, check_db_health, get_db_engine_display
@@ -202,6 +204,64 @@ async def scan_email(
         raise HTTPException(
             status_code=500,
             detail="An error occurred while evaluating the message content.",
+        )
+
+
+# ── 5b. Gmail Add-on Protection Endpoint ──────────────────────────────────────
+
+@router.post(
+    "/scan/gmail",
+    response_model=GmailScanResponse,
+    summary="Dedicated PhishShield AI scanner endpoint for Google Gmail Add-on",
+)
+async def scan_gmail(
+    request: Request,
+    body: GmailScanRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Dedicated endpoint for the PhishShield AI Google Gmail Add-on.
+    - Evaluates urgency cues, credential harvesting language, and spoofed senders.
+    - Safely parses and extracts links from plain text and HTML bodies.
+    - Deep scans embedded URLs through the PhishShield URL defense engine.
+    - Enforces integration API key authentication when configured.
+    - Preserves privacy: raw email bodies are NEVER stored in the database.
+    """
+    # 1. Server-to-server integration authentication (if configured in settings)
+    if settings.gmail_integration_api_key:
+        auth_header = request.headers.get("Authorization", "")
+        key_header = request.headers.get("X-PhishShield-Key", "")
+        expected_key = settings.gmail_integration_api_key.strip()
+        bearer_key = auth_header.replace("Bearer", "").strip() if auth_header.startswith("Bearer") else ""
+
+        if key_header != expected_key and bearer_key != expected_key:
+            logger.warning("Unauthorized Gmail Add-on scan attempt: invalid or missing integration key.")
+            raise HTTPException(
+                status_code=401,
+                detail="Unauthorized: invalid or missing PhishShield integration key.",
+            )
+
+    # 2. Execute analysis
+    try:
+        result = analyze_gmail_message(
+            subject=body.subject,
+            sender=body.sender,
+            body=body.body,
+            html_body=body.html_body,
+            extracted_links=body.extracted_links,
+            raw_headers=body.raw_headers,
+            db=db,
+        )
+        return result
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Gmail Add-on scan error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred while analyzing the Gmail message.",
         )
 
 

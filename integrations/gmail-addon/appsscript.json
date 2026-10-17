@@ -1,0 +1,40 @@
+{
+  "timeZone": "Etc/GMT",
+  "dependencies": {
+    "enabledAdvancedServices": []
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/script.locale"
+  ],
+  "urlFetchWhitelist": [
+    "https://*.onrender.com/",
+    "https://phish-shield-ai-pink.vercel.app/",
+    "https://vyom-rouge.vercel.app/",
+    "http://127.0.0.1:8000/",
+    "http://localhost:8000/"
+  ],
+  "addOns": {
+    "common": {
+      "name": "PhishShield AI",
+      "logoUrl": "https://phish-shield-ai-pink.vercel.app/phishshield-icon.png",
+      "layoutProperties": {
+        "primaryColor": "#00D9FF",
+        "secondaryColor": "#04182B"
+      }
+    },
+    "gmail": {
+      "contextualTriggers": [
+        {
+          "unconditional": {},
+          "onTriggerFunction": "onGmailMessageOpen"
+        }
+      ],
+      "primaryColor": "#00D9FF",
+      "secondaryColor": "#04182B"
+    }
+  }
+}

@@ -48,5 +48,10 @@ class Settings(BaseSettings):
     reporting_api_key: Union[str, None] = None
     reporting_department_name: Union[str, None] = None
 
+    # Gmail Add-on Integration Configuration
+    gmail_integration_api_key: Union[str, None] = None
+    public_dashboard_url: str = "https://phish-shield-ai-pink.vercel.app"
+    public_api_url: Union[str, None] = None
+
 
 settings = Settings()
