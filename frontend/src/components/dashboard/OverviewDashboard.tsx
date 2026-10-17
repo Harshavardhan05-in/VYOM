@@ -67,6 +67,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   }
 
   // Find latest high risk threat record for the alert banner (prefer URL threat matching reference)
+  const [bannerMode, setBannerMode] = useState<'threat' | 'safe'>('threat')
+
   const highRiskThreat = useMemo(() => {
     if (historyRecords.length > 0) {
       const highUrl = historyRecords.find((r) => r.risk_category === 'high_risk' && r.scanner_type === 'url')
@@ -81,6 +83,18 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
       if (highUrl) return highUrl
       const high = stats.recent_activity.find((r) => r.risk_category === 'high_risk')
       if (high) return high
+    }
+    return null
+  }, [historyRecords, stats])
+
+  const safeScanRecord = useMemo(() => {
+    if (historyRecords.length > 0) {
+      const safe = historyRecords.find((r) => r.risk_category === 'safe')
+      if (safe) return safe
+    }
+    if (stats?.recent_activity) {
+      const safe = stats.recent_activity.find((r) => r.risk_category === 'safe')
+      if (safe) return safe
     }
     return null
   }, [historyRecords, stats])
@@ -257,9 +271,9 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
 
           {/* Card 3: Safe Results */}
-          <div className="kpi-card p-3.5 sm:p-4 rounded-2xl bg-[#04182B] border border-[#10B981]/30 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex items-center justify-between gap-3 min-w-[170px]">
+          <div className="kpi-card p-3.5 sm:p-4 rounded-2xl bg-[#04182B] border border-[#22C55E]/40 hover:border-[#22C55E] shadow-[0_4px_20px_rgba(0,0,0,0.4)] hover:shadow-[0_0_24px_rgba(34,197,94,0.25)] transition-all flex items-center justify-between gap-3 min-w-[170px]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#10B981]/15 border border-[#10B981]/40 flex items-center justify-center text-[#10B981] shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
+              <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 border border-[#22C55E]/45 flex items-center justify-center text-[#4ADE80] shrink-0 shadow-[0_0_14px_rgba(34,197,94,0.35)]">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
@@ -272,12 +286,12 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[10px] font-mono text-[#10B981] font-bold">{trends.safe}</span>
+              <span className="text-[10px] font-mono text-[#4ADE80] font-bold">{trends.safe}</span>
               <div className="flex items-end gap-0.5 h-4">
-                <div className="w-1 bg-[#10B981]/40 rounded-full h-2" />
-                <div className="w-1 bg-[#10B981]/60 rounded-full h-3" />
-                <div className="w-1 bg-[#10B981]/80 rounded-full h-3.5" />
-                <div className="w-1 bg-[#10B981] rounded-full h-4 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+                <div className="w-1 bg-[#22C55E]/40 rounded-full h-2" />
+                <div className="w-1 bg-[#22C55E]/60 rounded-full h-3" />
+                <div className="w-1 bg-[#22C55E]/80 rounded-full h-3.5" />
+                <div className="w-1 bg-[#22C55E] rounded-full h-4 shadow-[0_0_6px_rgba(34,197,94,0.7)]" />
               </div>
             </div>
           </div>
@@ -311,10 +325,13 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
       </section>
 
       {/* ======================================================== */}
-      {/* 3. HIGH-RISK THREAT ALERT BANNER                         */}
+      {/* 3. HIGH-RISK THREAT ALERT & SAFE DEFENSE BANNER          */}
       {/* ======================================================== */}
       <RedAlertBanner
         threatRecord={highRiskThreat}
+        safeRecord={safeScanRecord}
+        activeView={bannerMode}
+        onToggleView={(view) => setBannerMode(view)}
         onViewReport={handleInspect}
       />
 

@@ -91,7 +91,7 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
                           ? 'bg-red-500/15 text-red-400 border border-red-500/30'
                           : isSusp
                           ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                          : 'bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30'
+                          : 'bg-[#22C55E]/15 text-[#4ADE80] border border-[#22C55E]/40 shadow-[0_0_8px_rgba(34,197,94,0.3)]'
                       }`}
                     >
                       {isHigh ? (
@@ -110,12 +110,12 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
                   {/* Col 2: Result Label (Col 2) */}
                   <div className="col-span-2 text-center">
                     <span
-                      className={`text-[11px] font-medium ${
+                      className={`text-[11px] font-bold ${
                         isHigh
                           ? 'text-red-400'
                           : isSusp
                           ? 'text-amber-400'
-                          : 'text-[#10B981]'
+                          : 'text-[#4ADE80]'
                       }`}
                     >
                       {isHigh ? 'Malicious' : isSusp ? 'Suspicious' : 'Safe'}
@@ -130,7 +130,7 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
                           ? 'text-red-400'
                           : isSusp
                           ? 'text-amber-400'
-                          : 'text-[#10B981]'
+                          : 'text-[#22C55E]'
                       }`}
                     >
                       {item.risk_score}

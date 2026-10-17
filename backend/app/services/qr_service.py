@@ -12,6 +12,7 @@ from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.models import ScanRecordDB
@@ -261,10 +262,14 @@ def decode_and_analyze_qr(image_bytes: bytes, filename: str = "qr_code.png", db:
 
     triggered_findings = [f for f in findings if f.triggered]
 
-    # 5. Persist scan in SQLite database
+    # 5. Persist scan in database
     if db:
         try:
             target_str = url_target if url_target else (primary_payload[:100] if primary_payload else filename)
+            findings_data = [
+                f.model_dump() if hasattr(f, "model_dump") else f.dict()
+                for f in findings
+            ]
             record = ScanRecordDB(
                 scan_id=scan_id,
                 scanner_type="qr",
@@ -273,16 +278,25 @@ def decode_and_analyze_qr(image_bytes: bytes, filename: str = "qr_code.png", db:
                 risk_category=category.value,
                 findings_count=len(triggered_findings),
                 summary=reasons[0] if reasons else "QR code inspection completed.",
-                findings_json=json.dumps([f.model_dump() for f in findings]),
+                findings_json=json.dumps(findings_data),
                 reasons_json=json.dumps(reasons),
                 recommended_actions_json=json.dumps(recommendations),
                 status="flagged" if category != RiskCategory.SAFE else "completed",
             )
             db.add(record)
             db.commit()
-        except Exception as e:
-            logger.error(f"Failed to persist QR scan record: {e}", exc_info=True)
+        except Exception as exc:
             db.rollback()
+            logger.error(
+                "Failed to persist QR scan record to database for scan_id=%s: %s",
+                scan_id,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Database persistence failed: unable to save QR scan record.",
+            ) from exc
 
     return QRScanResponse(
         scan_id=scan_id,

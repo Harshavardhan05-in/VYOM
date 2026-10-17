@@ -49,6 +49,7 @@ export const PhoneScannerView: React.FC = () => {
       <RiskReport
         title="Phone Number Reputation Assessment"
         target={result.normalized_number}
+        scannerType="phone"
         riskScore={result.risk_score}
         riskCategory={result.risk_category}
         findings={result.findings}

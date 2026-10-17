@@ -19,8 +19,12 @@ Scoring Policy (Documented):
 This is a heuristic system. The score is NOT a calibrated probability.
 """
 import uuid
+import json
+import logging
 from datetime import datetime, timezone
 from typing import Optional
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from app.schemas.scan import (
     ScanResponse, RiskCategory, MLResult, SecurityFinding
@@ -29,8 +33,8 @@ from app.ml.feature_extractor import extract_features
 from app.ml.model_manager import model_manager
 from app.services.rule_engine import analyze_url
 from app.db.models import ScanRecordDB
-from sqlalchemy.orm import Session
-import json
+
+logger = logging.getLogger("phishshield.scan")
 
 
 # Score thresholds
@@ -137,7 +141,7 @@ def run_scan(url: str, db: Optional[Session] = None) -> ScanResponse:
     """
     Orchestrate a full phishing analysis for the submitted URL.
     """
-    scan_id = str(uuid.uuid4())
+    scan_id = f"SCAN-URL-{uuid.uuid4().hex[:8].upper()}"
     scanned_at = datetime.now(timezone.utc).isoformat()
 
     # 1. Feature extraction
@@ -191,9 +195,13 @@ def run_scan(url: str, db: Optional[Session] = None) -> ScanResponse:
         else "Rule-only: 12 heuristic security rules (ML model not loaded)"
     )
 
-    # 7. Persist to SQLite Database if session provided
+    # 7. Persist to Database if session provided
     if db:
         try:
+            findings_data = [
+                f.model_dump() if hasattr(f, "model_dump") else f.dict()
+                for f in findings
+            ]
             record = ScanRecordDB(
                 scan_id=scan_id,
                 scanner_type="url",
@@ -202,7 +210,7 @@ def run_scan(url: str, db: Optional[Session] = None) -> ScanResponse:
                 risk_category=category.value,
                 findings_count=len(triggered_findings),
                 summary=reasons[0] if reasons else "URL structure scan completed.",
-                findings_json=json.dumps([f.model_dump() for f in findings]),
+                findings_json=json.dumps(findings_data),
                 reasons_json=json.dumps(reasons),
                 recommended_actions_json=json.dumps(recommendations),
                 ml_prediction=ml_prediction,
@@ -211,8 +219,18 @@ def run_scan(url: str, db: Optional[Session] = None) -> ScanResponse:
             )
             db.add(record)
             db.commit()
-        except Exception:
+        except Exception as exc:
             db.rollback()
+            logger.error(
+                "Failed to persist URL scan record to database for scan_id=%s: %s",
+                scan_id,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Database persistence failed: unable to save URL scan record.",
+            ) from exc
 
     return ScanResponse(
         url=url,

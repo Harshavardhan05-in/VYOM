@@ -12,7 +12,7 @@ class ScanRecordDB(Base):
     __tablename__ = "scan_records"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    scan_id = Column(String(32), unique=True, index=True, nullable=False)
+    scan_id = Column(String(64), unique=True, index=True, nullable=False)
     scanner_type = Column(String(20), index=True, nullable=False)  # url, file, qr, phone, email, social
     input_target = Column(String(2048), nullable=False)           # Sanitized URL, filename, phone, handle, etc.
     risk_score = Column(Integer, nullable=False, default=0)       # 0–100
@@ -56,7 +56,7 @@ class SuspiciousUrlReportDB(Base):
     report_id = Column(String(32), unique=True, index=True, nullable=False)
     url = Column(String(2048), nullable=False, index=True)
     normalized_url = Column(String(2048), nullable=False)
-    scan_id = Column(String(32), nullable=True, index=True)
+    scan_id = Column(String(64), nullable=True, index=True)
     risk_score = Column(Integer, nullable=True)
     risk_category = Column(String(20), nullable=True)
     user_explanation = Column(Text, nullable=True)

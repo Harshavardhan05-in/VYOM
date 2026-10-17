@@ -5,14 +5,18 @@ and detects premium-rate / Wangiri callback scam indicators.
 """
 import re
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.schemas.scan import RiskCategory, SecurityFinding
 from app.schemas.scanners import PhoneScanResponse
 from app.db.models import ScanRecordDB
+
+logger = logging.getLogger("phishshield.phone")
 
 PHONE_LIMITATIONS = [
     "Format and numbering plan validation confirms whether a number adheres to telecommunication standards.",
@@ -236,6 +240,10 @@ def analyze_phone_number(raw_number: str, country_code: Optional[str] = None, db
     # Save to database if session provided
     if db:
         try:
+            findings_data = [
+                f.model_dump() if hasattr(f, "model_dump") else f.dict()
+                for f in findings
+            ]
             record = ScanRecordDB(
                 scan_id=scan_id,
                 scanner_type="phone",
@@ -244,15 +252,25 @@ def analyze_phone_number(raw_number: str, country_code: Optional[str] = None, db
                 risk_category=category.value,
                 findings_count=len(triggered_findings),
                 summary=reasons[0] if reasons else "Phone validation completed.",
-                findings_json=json.dumps([f.model_dump() for f in findings]),
+                findings_json=json.dumps(findings_data),
                 reasons_json=json.dumps(reasons),
                 recommended_actions_json=json.dumps(recommendations),
                 status="flagged" if category != RiskCategory.SAFE else "completed",
             )
             db.add(record)
             db.commit()
-        except Exception:
+        except Exception as exc:
             db.rollback()
+            logger.error(
+                "Failed to persist phone scan record to database for scan_id=%s: %s",
+                scan_id,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Database persistence failed: unable to save phone scan record.",
+            ) from exc
 
     return PhoneScanResponse(
         scan_id=scan_id,

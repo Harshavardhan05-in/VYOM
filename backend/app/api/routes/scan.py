@@ -24,7 +24,7 @@ from app.services.phone_service import analyze_phone_number
 from app.services.email_service import analyze_email_message
 from app.services.social_service import analyze_social_profile
 from app.ml.model_manager import model_manager
-from app.db.database import get_db
+from app.db.database import get_db, check_db_health, get_db_engine_display
 from app.db.models import ScanRecordDB
 
 logger = logging.getLogger("phishshield")
@@ -50,6 +50,8 @@ async def scan_url(
     try:
         result = run_scan(body.url, db=db)
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"URL scan error for {body.url!r}: {e}", exc_info=True)
         raise HTTPException(
@@ -159,6 +161,8 @@ async def scan_phone(
             db=db,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Phone scan error for {body.phone_number!r}: {e}", exc_info=True)
         raise HTTPException(
@@ -191,6 +195,8 @@ async def scan_email(
             db=db,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Email scan error: {e}", exc_info=True)
         raise HTTPException(
@@ -222,6 +228,8 @@ async def scan_social(
             db=db,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Social scan error: {e}", exc_info=True)
         raise HTTPException(
@@ -391,6 +399,9 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
             for idx, (title, count) in enumerate(sorted_indicators)
         ]
 
+        db_online = check_db_health(db)
+        db_engine = get_db_engine_display(db)
+
         return DashboardStatsResponse(
             total_scans=total,
             threats_detected=high_risk + suspicious,
@@ -404,8 +415,8 @@ async def get_dashboard_stats(db: Session = Depends(get_db)):
             system_status={
                 "engine_online": True,
                 "ml_model_loaded": model_manager.is_available(),
-                "database_online": True,
-                "database_engine": "SQLite / SQLAlchemy",
+                "database_online": db_online,
+                "database_engine": db_engine,
             },
         )
     except Exception as e:

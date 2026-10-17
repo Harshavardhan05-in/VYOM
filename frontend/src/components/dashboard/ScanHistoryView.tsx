@@ -264,7 +264,7 @@ export const ScanHistoryView: React.FC = () => {
                               ? 'text-[#EF4444]'
                               : isSuspicious
                               ? 'text-[#F59E0B]'
-                              : 'text-[#10B981]'
+                              : 'text-[#22C55E]'
                           }
                         >
                           {item.risk_score} / 100
@@ -281,7 +281,7 @@ export const ScanHistoryView: React.FC = () => {
                               : 'success'
                           }
                           size="sm"
-                          dot={isHigh}
+                          dot={isHigh || item.risk_category === 'safe'}
                         >
                           {item.risk_category.replace('_', ' ')}
                         </Badge>

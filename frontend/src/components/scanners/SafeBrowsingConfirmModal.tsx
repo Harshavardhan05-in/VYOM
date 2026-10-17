@@ -59,11 +59,11 @@ export const SafeBrowsingConfirmModal: React.FC<SafeBrowsingConfirmModalProps> =
       aria-modal="true"
       aria-labelledby="safe-browsing-title"
     >
-      <div className="relative w-full max-w-lg rounded-2xl bg-[#04182B] border border-[#10B981]/40 shadow-[0_0_40px_rgba(16,185,129,0.25)] p-6 sm:p-7 space-y-6 animate-scaleUp">
+      <div className="relative w-full max-w-lg rounded-2xl bg-[#04182B] border-2 border-[#22C55E]/45 shadow-[0_0_40px_rgba(34,197,94,0.25)] p-6 sm:p-7 space-y-6 animate-scaleUp">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-[#10B981]/20 pb-4">
+        <div className="flex items-start justify-between gap-4 border-b border-[#22C55E]/20 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#10B981]/15 border border-[#10B981]/40 flex items-center justify-center text-[#10B981] shadow-[0_0_16px_rgba(16,185,129,0.3)] shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#22C55E]/15 border border-[#22C55E]/45 flex items-center justify-center text-[#4ADE80] shadow-[0_0_16px_rgba(34,197,94,0.35)] shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
@@ -88,14 +88,14 @@ export const SafeBrowsingConfirmModal: React.FC<SafeBrowsingConfirmModalProps> =
         <div className="space-y-3.5">
           <div className="space-y-1.5">
             <label className="text-[11px] font-mono uppercase tracking-wider text-[#94A3B8] flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-[#10B981]" />
+              <Globe className="w-3.5 h-3.5 text-[#4ADE80]" />
               <span>Destination Hostname</span>
             </label>
-            <div className="flex items-center justify-between p-3 rounded-xl bg-[#061426] border border-[#10B981]/30">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-[#061426] border border-[#22C55E]/30">
               <span className="font-mono text-sm font-bold text-[#F8FAFC]">
                 {parsed.isValid ? parsed.hostname : 'Invalid Hostname'}
               </span>
-              <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full border ${parsed.isHttps ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'}`}>
+              <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full border ${parsed.isHttps ? 'bg-[#22C55E]/15 text-[#4ADE80] border-[#22C55E]/40 font-bold' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'}`}>
                 {parsed.protocol.toUpperCase().replace(':', '')}
               </span>
             </div>
@@ -136,7 +136,7 @@ export const SafeBrowsingConfirmModal: React.FC<SafeBrowsingConfirmModalProps> =
             type="button"
             onClick={handleProceed}
             disabled={!parsed.isValid}
-            className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] disabled:opacity-50 text-[#020B16] font-bold text-xs shadow-[0_0_16px_rgba(16,185,129,0.4)] transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] disabled:opacity-50 text-[#020B16] font-extrabold text-xs shadow-[0_0_20px_rgba(34,197,94,0.45)] transition-all flex items-center gap-2 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
           >
             <ExternalLink className="w-4 h-4" />
             <span>Proceed to Website</span>

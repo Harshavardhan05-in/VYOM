@@ -70,6 +70,7 @@ export const FileScannerView: React.FC = () => {
       <RiskReport
         title="File Threat Assessment"
         target={result.filename}
+        scannerType="file"
         riskScore={result.risk_score}
         riskCategory={result.risk_category}
         findings={result.findings}

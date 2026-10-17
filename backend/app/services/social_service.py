@@ -6,14 +6,18 @@ homoglyph deception, and credential harvesting lures.
 """
 import re
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.schemas.scan import RiskCategory, SecurityFinding
 from app.schemas.scanners import SocialScanResponse
 from app.db.models import ScanRecordDB
+
+logger = logging.getLogger("phishshield.social")
 
 SOCIAL_LIMITATIONS = [
     "Analysis evaluates handle syntax, impersonation keywords, URL structures, and user-provided metadata.",
@@ -218,6 +222,10 @@ def analyze_social_profile(
     # Save to database if session provided
     if db:
         try:
+            findings_data = [
+                f.model_dump() if hasattr(f, "model_dump") else f.dict()
+                for f in findings
+            ]
             record = ScanRecordDB(
                 scan_id=scan_id,
                 scanner_type="social",
@@ -226,15 +234,25 @@ def analyze_social_profile(
                 risk_category=category.value,
                 findings_count=len(triggered_findings),
                 summary=reasons[0] if reasons else "Social profile risk assessment completed.",
-                findings_json=json.dumps([f.model_dump() for f in findings]),
+                findings_json=json.dumps(findings_data),
                 reasons_json=json.dumps(reasons),
                 recommended_actions_json=json.dumps(recommendations),
                 status="flagged" if category != RiskCategory.SAFE else "completed",
             )
             db.add(record)
             db.commit()
-        except Exception:
+        except Exception as exc:
             db.rollback()
+            logger.error(
+                "Failed to persist social scan record to database for scan_id=%s: %s",
+                scan_id,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Database persistence failed: unable to save social scan record.",
+            ) from exc
 
     return SocialScanResponse(
         scan_id=scan_id,

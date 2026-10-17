@@ -143,13 +143,13 @@ export const SandboxMatrix: React.FC = () => {
                           ? 'bg-red-500/10 text-red-400 border-red-500/20'
                           : row.risk_category === 'suspicious'
                           ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : 'bg-[#22C55E]/15 text-[#4ADE80] border-[#22C55E]/40 font-bold shadow-[0_0_8px_rgba(34,197,94,0.25)]'
                       }`}>
                         {row.risk_category}
                       </span>
                     </td>
                     <td className="py-3 px-4 font-bold">
-                      <span className={row.risk_category === 'high_risk' ? 'text-red-400' : 'text-[#10B981]'}>
+                      <span className={row.risk_category === 'high_risk' ? 'text-red-400' : row.risk_category === 'suspicious' ? 'text-amber-400' : 'text-[#22C55E]'}>
                         {row.risk_score} / 100
                       </span>
                     </td>

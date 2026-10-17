@@ -59,6 +59,7 @@ export const EmailScannerView: React.FC = () => {
       <RiskReport
         title="Email & Message Threat Assessment"
         target={result.subject || result.sender || 'Direct Message Inspection'}
+        scannerType="email"
         riskScore={result.risk_score}
         riskCategory={result.risk_category}
         findings={result.findings}

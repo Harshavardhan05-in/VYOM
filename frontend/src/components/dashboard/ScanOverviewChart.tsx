@@ -296,17 +296,17 @@ export const ScanOverviewChart: React.FC<ScanOverviewChartProps> = ({
                 {/* Background Ring */}
                 <circle cx="50" cy="50" r={radius} fill="none" stroke="#0B1120" strokeWidth="12" />
 
-                {/* Safe Segment (Teal/Cyan) */}
+                {/* Safe Segment (Prominent Green #22C55E) */}
                 <circle
                   cx="50"
                   cy="50"
                   r={radius}
                   fill="none"
-                  stroke="#00D9FF"
+                  stroke="#22C55E"
                   strokeWidth="12"
                   strokeDasharray={`${safeDash} ${circumference}`}
                   strokeDashoffset={-safeOffset}
-                  className="transition-all duration-700 drop-shadow-[0_0_8px_rgba(0,217,255,0.4)]"
+                  className="transition-all duration-700 drop-shadow-[0_0_10px_rgba(34,197,94,0.6)]"
                 />
 
                 {/* Suspicious Segment (Yellow/Amber) */}
@@ -370,10 +370,10 @@ export const ScanOverviewChart: React.FC<ScanOverviewChartProps> = ({
                 <span className="text-[#94A3B8] font-mono text-[11px]">{riskCounts.suspPct}%</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#00D9FF] shadow-[0_0_6px_rgba(0,217,255,0.6)] shrink-0" />
-                <span className="text-[#CBD5E1] text-[11px] w-20">Low Risk</span>
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#22C55E] shadow-[0_0_8px_rgba(34,197,94,0.7)] shrink-0" />
+                <span className="text-[#CBD5E1] text-[11px] w-20 font-medium">Safe / Clean</span>
                 <span className="text-white font-mono font-bold w-6 text-right">{riskCounts.safe}</span>
-                <span className="text-[#94A3B8] font-mono text-[11px]">{riskCounts.safePct}%</span>
+                <span className="text-[#4ADE80] font-mono text-[11px] font-bold">{riskCounts.safePct}%</span>
               </div>
             </div>
           </div>

@@ -5,15 +5,19 @@ sender domain spoofing, and extracts & scans embedded links.
 """
 import re
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.schemas.scan import RiskCategory, SecurityFinding
 from app.schemas.scanners import EmailScanResponse
 from app.services.scan_service import run_scan
 from app.db.models import ScanRecordDB
+
+logger = logging.getLogger("phishshield.email")
 
 EMAIL_LIMITATIONS = [
     "Text heuristics and keyword triggers evaluate psychological coercion and phishing patterns.",
@@ -242,6 +246,10 @@ def analyze_email_message(
     if db:
         try:
             target_str = f"Subject: {subject[:60]}" if subject else f"Message: {body[:60]}"
+            findings_data = [
+                f.model_dump() if hasattr(f, "model_dump") else f.dict()
+                for f in findings
+            ]
             record = ScanRecordDB(
                 scan_id=scan_id,
                 scanner_type="email",
@@ -250,15 +258,25 @@ def analyze_email_message(
                 risk_category=category.value,
                 findings_count=len(triggered_findings),
                 summary=reasons[0] if reasons else "Email scan completed.",
-                findings_json=json.dumps([f.model_dump() for f in findings]),
+                findings_json=json.dumps(findings_data),
                 reasons_json=json.dumps(reasons),
                 recommended_actions_json=json.dumps(recommendations),
                 status="flagged" if category != RiskCategory.SAFE else "completed",
             )
             db.add(record)
             db.commit()
-        except Exception:
+        except Exception as exc:
             db.rollback()
+            logger.error(
+                "Failed to persist email scan record to database for scan_id=%s: %s",
+                scan_id,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Database persistence failed: unable to save email scan record.",
+            ) from exc
 
     return EmailScanResponse(
         scan_id=scan_id,

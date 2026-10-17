@@ -3,6 +3,7 @@ import {
   Inbox,
   Trash2,
   Search,
+  ShieldCheck,
 } from 'lucide-react'
 import { api, type HistoryItem } from '../../services/api'
 import { Badge } from '../common/Badge'
@@ -88,11 +89,16 @@ export const QuarantineVault: React.FC = () => {
             Scanning quarantine vault artifacts...
           </div>
         ) : quarantinedItems.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl bg-[#04182B] border border-[#00D9FF]/15 space-y-2">
-            <p className="text-sm font-semibold text-[#F8FAFC]">No Quarantined Threat Artifacts</p>
-            <p className="text-xs text-[#94A3B8] max-w-md mx-auto">
-              The quarantine isolation vault is currently empty. High-risk payloads, malicious URLs, and flagged artifacts detected across any scanner will appear here for review and permanent purge.
-            </p>
+          <div className="p-12 text-center rounded-2xl bg-gradient-to-r from-[#052E1A]/40 via-[#04182B] to-[#052E1A]/20 border-2 border-[#22C55E]/40 shadow-[0_0_30px_rgba(34,197,94,0.18)] space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-[#22C55E]/20 border border-[#22C55E]/50 flex items-center justify-center text-[#4ADE80] shadow-[0_0_16px_rgba(34,197,94,0.35)] mx-auto">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-base font-extrabold text-[#4ADE80]">Quarantine Isolation Vault Secure</p>
+              <p className="text-xs text-[#CBD5E1] max-w-md mx-auto mt-1 leading-relaxed">
+                Zero active quarantined threat artifacts in isolation. When high-risk payloads or malicious URLs are intercepted, they are quarantined here for audit and purge.
+              </p>
+            </div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center text-xs font-mono text-[#94A3B8]">
